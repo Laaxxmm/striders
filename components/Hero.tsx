@@ -100,9 +100,9 @@ const Hero: React.FC = () => {
             transition={{ delay: 0.6, duration: 0.8 }}
             className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12"
           >
-            <button className="px-10 py-5 bg-brand-gold text-brand-dark font-display font-bold text-lg rounded-full shadow-[0_10px_40px_-10px_rgba(251,191,36,0.5)] hover:bg-white hover:scale-105 transition-all duration-300">
+            <a href="#events" className="px-10 py-5 bg-brand-gold text-brand-dark font-display font-bold text-lg rounded-full shadow-[0_10px_40px_-10px_rgba(251,191,36,0.5)] hover:bg-white hover:scale-105 transition-all duration-300 inline-block text-center">
               Find a Race Near You
-            </button>
+            </a>
             <button className="px-10 py-5 bg-transparent border-2 border-white/20 text-white font-display font-bold text-lg rounded-full hover:bg-white/10 transition-all duration-300">
               Watch Video
             </button>

@@ -135,9 +135,9 @@ const InfoSection: React.FC = () => {
                     </p>
 
                     {/* Button */}
-                    <button className={`bg-white ${step.buttonColor} font-bold py-3 px-8 rounded-full flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg`}>
+                    <a href="#categories" className={`bg-white ${step.buttonColor} font-bold py-3 px-8 rounded-full flex items-center gap-2 hover:bg-gray-100 transition-colors shadow-lg inline-block`}>
                       KNOW MORE <ArrowRightCircle size={18} />
-                    </button>
+                    </a>
 
                   </div>
                 </div>
