@@ -49,7 +49,7 @@ const Hero: React.FC = () => {
   };
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden flex items-center bg-brand-dark pt-20">
+    <section className="relative min-h-screen w-full overflow-hidden flex items-center bg-brand-dark pt-40 md:pt-32 lg:pt-20">
 
       {/* Ambient Glows */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-violet/40 rounded-full blur-[120px] mix-blend-screen" />
