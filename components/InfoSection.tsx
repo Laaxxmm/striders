@@ -26,7 +26,8 @@ const InfoSection: React.FC = () => {
       desc: "Weekly training sessions with pro coaches. Master the basics of balance, steering, and braking in a fun group environment.",
       Icon: GraduationCap,
       bg: "bg-gradient-to-r from-brand-gold to-brand-yellow", // Darker gold/orange to match reference feel
-      buttonColor: "text-[#d97706]"
+      buttonColor: "text-[#d97706]",
+      textColor: "text-brand-dark"
     },
     {
       id: 2,
@@ -35,7 +36,8 @@ const InfoSection: React.FC = () => {
       desc: "Put skills to the test! Age-categorized races on professionally designed tracks with safety barriers and cheering crowds.",
       Icon: Flag,
       bg: "bg-[#5b21b6]", // Violet/Purple
-      buttonColor: "text-[#5b21b6]"
+      buttonColor: "text-[#5b21b6]",
+      textColor: "text-white"
     },
     {
       id: 3,
@@ -44,7 +46,8 @@ const InfoSection: React.FC = () => {
       desc: "Podium finishes, medals for everyone, and the pride of accomplishment. Memories that last a lifetime.",
       Icon: Medal,
       bg: "bg-[#191717]", // Dark/Black
-      buttonColor: "text-black"
+      buttonColor: "text-black",
+      textColor: "text-white"
     }
   ];
 
@@ -125,9 +128,9 @@ const InfoSection: React.FC = () => {
                     </div>
 
                     {/* Content */}
-                    <span className="font-display font-bold text-white/80 text-lg mb-1">{step.age}</span>
-                    <h3 className="font-display font-black text-3xl text-white mb-4 uppercase tracking-tight">{step.title}</h3>
-                    <p className="text-white/90 text-sm leading-relaxed mb-8 flex-grow">
+                    <span className={`font-display font-bold text-lg mb-1 ${step.textColor} opacity-80`}>{step.age}</span>
+                    <h3 className={`font-display font-black text-3xl mb-4 uppercase tracking-tight ${step.textColor}`}>{step.title}</h3>
+                    <p className={`text-sm leading-relaxed mb-8 flex-grow ${step.textColor} opacity-90`}>
                       {step.desc}
                     </p>
 
