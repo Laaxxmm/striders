@@ -62,8 +62,8 @@ const Categories: React.FC = () => {
             >
               {/* Image Side */}
               <div className="flex-1 w-full relative group">
-                <div className={`absolute inset-0 bg-gradient-to-br ${cat.gradient} rounded-[3rem] blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500`} />
-                <div className="relative h-[400px] md:h-[500px] rounded-[3rem] overflow-hidden border-4 border-white/5 shadow-2xl">
+                <div className={`absolute inset-0 bg-gradient-to-br ${cat.gradient} rounded-[2rem] md:rounded-[3rem] blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500`} />
+                <div className="relative h-[300px] md:h-[500px] rounded-[2rem] md:rounded-[3rem] overflow-hidden border-4 border-white/5 shadow-2xl">
                   <img
                     src={cat.img}
                     alt={cat.name}
@@ -103,7 +103,7 @@ const Categories: React.FC = () => {
 
               {/* Text Side */}
               <div className="flex-1 text-center lg:text-left">
-                <span className={`inline-block text-[12rem] md:text-[18rem] leading-[0.8] font-display font-black text-transparent bg-clip-text bg-gradient-to-br ${cat.gradient} opacity-50 mb-[-50px] md:mb-[-110px] relative z-0 select-none drop-shadow-lg`}>
+                <span className={`inline-block text-[8rem] md:text-[18rem] leading-[0.8] font-display font-black text-transparent bg-clip-text bg-gradient-to-br ${cat.gradient} opacity-50 mb-[-30px] md:mb-[-110px] relative z-0 select-none drop-shadow-lg`}>
                   0{cat.id}
                 </span>
                 <h3 className="relative z-10 font-display text-5xl font-bold text-white mb-6">

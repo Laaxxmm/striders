@@ -57,7 +57,7 @@ const Events: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
               <span className="text-brand-gold font-bold tracking-widest text-xs uppercase">Live Registrations</span>
             </div>
-            <h2 className="font-display text-5xl font-bold text-white">
+            <h2 className="font-display text-4xl md:text-5xl font-bold text-white">
               Upcoming <span className="text-brand-gold">Races</span>
             </h2>
           </div>
@@ -101,7 +101,7 @@ const Events: React.FC = () => {
           </div>
 
           {/* Preview Panel */}
-          <div className="lg:col-span-7 h-[500px] relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-brand-dark/50">
+          <div className="lg:col-span-7 h-[300px] md:h-[500px] relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-brand-dark/50">
             <div className="absolute inset-0 bg-brand-violet/20 animate-pulse z-0" />
 
             {/* Main Image */}

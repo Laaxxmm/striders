@@ -64,7 +64,7 @@ const InfoSection: React.FC = () => {
               <div className="h-1 w-12 bg-brand-gold rounded-full" />
               <span className="text-brand-gold font-display font-bold uppercase tracking-widest text-sm">The Revolution</span>
             </div>
-            <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-6 leading-tight">
+            <h2 className="font-display text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
               More Than Just a <br /><span className="text-brand-violet bg-white px-2 rounded-lg transform -rotate-1 inline-block">Toy Bike</span>
             </h2>
             <p className="text-gray-300 text-lg mb-6 leading-relaxed font-bold">
@@ -112,7 +112,7 @@ const InfoSection: React.FC = () => {
             <p className="text-gray-400 max-w-2xl mx-auto">From the first wobbly steps to the finish line podium.</p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 gap-y-24 md:gap-y-8">
+          <div className="grid md:grid-cols-3 gap-8 gap-y-28 md:gap-y-8 mt-16 md:mt-0">
             {journeySteps.map((step) => (
               <div key={step.id} className="relative group">
                 {/* Card Container */}

@@ -77,7 +77,7 @@ const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.8 }}
-            className="font-display font-extrabold text-6xl md:text-8xl text-white leading-[1.1] mb-8"
+            className="font-display font-extrabold text-5xl md:text-8xl text-white leading-[1.1] mb-8"
           >
             Little Feet, <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-yellow-300 to-brand-gold">
@@ -165,7 +165,7 @@ const Hero: React.FC = () => {
             <motion.div
               variants={bikeContainerVariants}
               animate="ride"
-              className="relative z-20 w-[400px] md:w-[500px]"
+              className="relative z-20 w-[300px] md:w-[500px]"
             >
               {/* Image of a kid on a balance bike with transparent background */}
               {/* Using a specific Unsplash image but processed with mask or just a clean standard image in a shape */}

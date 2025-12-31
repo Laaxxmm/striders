@@ -115,8 +115,8 @@ const Navbar: React.FC = () => {
                   {link.name}
                 </a>
               ))}
-              <button className="w-full max-w-xs bg-brand-gold text-brand-dark px-8 py-4 rounded-full font-bold text-lg shadow-xl">
-                Register Now
+              <button className="w-full max-w-xs bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark px-8 py-4 rounded-full font-display font-bold text-lg shadow-xl hover:scale-105 transition-transform">
+                Join Race
               </button>
             </div>
           </motion.div>
