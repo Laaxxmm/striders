@@ -75,7 +75,7 @@ const Events: React.FC = () => {
               <motion.div
                 key={event.id}
                 onMouseEnter={() => { setHoveredEvent(event.id); setGeneratedImg(null); }}
-                className={`group p - 6 rounded - 2xl cursor - pointer bg - white / 5 border relative`}
+                className={`group p-6 rounded-2xl cursor-pointer bg-white/5 border relative`}
                 animate={{
                   borderColor: hoveredEvent === event.id ? '#fbbf24' : 'rgba(255, 255, 255, 0.05)',
                   backgroundColor: hoveredEvent === event.id ? 'rgba(76, 29, 149, 0.3)' : 'rgba(255, 255, 255, 0.05)',
@@ -128,13 +128,7 @@ const Events: React.FC = () => {
                     A professionally managed track with safety barriers, medical support, and photography team.
                   </p>
 
-                  <button
-                    onClick={handleGeneratePreview}
-                    disabled={loadingImg}
-                    className="bg-brand-gold/20 hover:bg-brand-gold text-brand-gold hover:text-brand-dark border border-brand-gold/50 px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2"
-                  >
-                    {loadingImg ? <Loader className="animate-spin w-3 h-3" /> : '✨ AI Venue Preview'}
-                  </button>
+                  {/* AI Preview Button Removed */}
                 </div>
               </div>
             </div>

@@ -59,8 +59,8 @@ const Hero: React.FC = () => {
 
         {/* Text Content */}
         <motion.div
-          style={{ y: y1 }}
-          className="text-center lg:text-left z-20 will-change-transform"
+          style={{ y: typeof window !== 'undefined' && window.innerWidth >= 1024 ? y1 : 0 }}
+          className="text-center lg:text-left z-20 will-change-transform relative"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -144,7 +144,7 @@ const Hero: React.FC = () => {
 
         {/* Hero Visual / Animation */}
         <motion.div
-          style={{ y: y2 }}
+          style={{ y: typeof window !== 'undefined' && window.innerWidth >= 1024 ? y2 : 0 }}
           className="relative h-[500px] lg:h-[600px] flex items-center justify-center z-10"
         >
           {/* Animated Background Composition */}
