@@ -17,6 +17,7 @@ const AdminAddEvent: React.FC = () => {
         description: '',
         deadline: '',
         razorpayLink: '',
+        googleFormUrl: '',
         image: '', // Will store data URL
     });
 
@@ -266,6 +267,21 @@ const AdminAddEvent: React.FC = () => {
                                 placeholder="https://rzp.io/..."
                                 required
                             />
+                        </div>
+                        <div className="md:col-span-2 space-y-2">
+                            <label className="text-sm font-bold text-gray-400 uppercase">Google Script Webhook URL</label>
+                            <input
+                                type="url"
+                                name="googleFormUrl"
+                                value={formData.googleFormUrl}
+                                onChange={handleInputChange}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                placeholder="https://script.google.com/macros/s/.../exec"
+                            />
+                            <p className="text-xs text-gray-500">
+                                Deploy the Google Apps Script via Extensions &gt; Apps Script in your Sheet.
+                                <a href="/google_apps_script.js" target="_blank" className="text-brand-gold underline ml-1">View Script Code</a>
+                            </p>
                         </div>
                     </div>
 

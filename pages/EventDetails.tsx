@@ -18,6 +18,7 @@ interface EventData {
     description: string;
     deadline: string;
     razorpayLink: string;
+    googleFormUrl?: string;
     image: string;
     categories: Category[];
 }
@@ -82,11 +83,37 @@ const EventDetails: React.FC = () => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Prepare Data
+        const selectedCategory = event?.categories.find(c => c.id === formData.category);
+
+        const submissionData = {
+            eventName: event?.name,
+            parentName: formData.parentName,
+            riderName: formData.name,
+            contact: formData.contact,
+            email: formData.email,
+            categoryName: selectedCategory?.name,
+            categoryPrice: selectedCategory?.price,
+        };
+
+        // Send to Google Sheet if URL exists
+        if (event?.googleFormUrl) {
+            try {
+                await fetch(event.googleFormUrl, {
+                    method: "POST",
+                    body: JSON.stringify(submissionData),
+                    mode: "no-cors" // Standard for GAS Webhook
+                });
+                console.log("Data sent to Google Sheet");
+            } catch (error) {
+                console.error("Error sending to Google Sheet", error);
+            }
+        }
+
         if (event?.razorpayLink) {
-            // Here you would optimally append queries to the Razorpay link if supported, or just redirect
-            // For this task, simple redirect
             window.location.href = event.razorpayLink;
         }
     };
@@ -297,8 +324,8 @@ const EventDetails: React.FC = () => {
                                     type="submit"
                                     disabled={!timeLeft}
                                     className={`w-full py-4 rounded-xl font-bold text-lg mt-4 transition-all ${timeLeft
-                                            ? 'bg-brand-dark text-white hover:bg-black shadow-lg hover:shadow-xl'
-                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                        ? 'bg-brand-dark text-white hover:bg-black shadow-lg hover:shadow-xl'
+                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                         }`}
                                 >
                                     {timeLeft ? 'Proceed to Payment' : 'Registration Closed'}
