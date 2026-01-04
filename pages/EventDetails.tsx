@@ -172,41 +172,42 @@ const EventDetails: React.FC = () => {
         <div className="min-h-screen bg-brand-dark">
             {/* Hero Banner */}
             {event.image_url && (
-                <div className="relative h-[300px] overflow-hidden">
+                <div className="relative h-[400px] md:h-[500px] overflow-hidden">
                     <img
                         src={event.image_url}
                         alt={event.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
+                        style={{ objectPosition: 'center 30%' }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/70 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/60 to-transparent" />
 
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-center">
-                            <h1 className="font-display font-bold text-4xl md:text-6xl text-white mb-4">
+                    <div className="absolute inset-0 flex items-end pb-12 md:pb-16">
+                        <div className="container mx-auto px-4 md:px-6">
+                            <h1 className="font-display font-bold text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white mb-3 md:mb-4">
                                 {event.name}
                             </h1>
-                            <div className="flex flex-wrap justify-center gap-6 text-gray-200">
+                            <div className="flex flex-wrap gap-3 md:gap-6 text-sm md:text-base text-gray-200">
                                 <div className="flex items-center gap-2">
-                                    <Calendar className="text-brand-gold" size={20} />
-                                    <span>{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                    <Calendar className="text-brand-gold" size={18} />
+                                    <span className="text-xs md:text-base">{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Clock className="text-brand-gold" size={20} />
-                                    <span>{event.time}</span>
+                                    <Clock className="text-brand-gold" size={18} />
+                                    <span className="text-xs md:text-base">{event.time}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <MapPin className="text-brand-gold" size={20} />
-                                    <span>{event.location}</span>
+                                    <MapPin className="text-brand-gold" size={18} />
+                                    <span className="text-xs md:text-base">{event.location}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Registration Status Badge */}
-                    <div className="absolute top-8 right-8">
-                        <div className={`px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider ${event.registration_status === 'open'
-                                ? 'bg-green-500 text-white'
-                                : 'bg-red-500 text-white'
+                    <div className="absolute top-4 md:top-8 right-4 md:right-8">
+                        <div className={`px-3 md:px-6 py-2 md:py-3 rounded-full font-bold text-xs md:text-sm uppercase tracking-wider ${event.registration_status === 'open'
+                            ? 'bg-green-500 text-white'
+                            : 'bg-red-500 text-white'
                             }`}>
                             Registration {event.registration_status}
                         </div>
@@ -214,18 +215,18 @@ const EventDetails: React.FC = () => {
                 </div>
             )}
 
-            <div className="max-w-7xl mx-auto px-6 py-12">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
                 {/* Countdown Timer */}
                 {event.registration_status === 'open' && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-gradient-to-r from-brand-gold/10 to-brand-yellow/10 border border-brand-gold/30 rounded-2xl p-8 mb-12"
+                        className="bg-gradient-to-r from-brand-gold/10 to-brand-yellow/10 border border-brand-gold/30 rounded-xl md:rounded-2xl p-4 md:p-8 mb-8 md:mb-12"
                     >
-                        <h3 className="text-brand-gold font-bold text-sm uppercase tracking-widest mb-4 text-center">
+                        <h3 className="text-brand-gold font-bold text-xs md:text-sm uppercase tracking-widest mb-3 md:mb-4 text-center">
                             Registration Closes In
                         </h3>
-                        <div className="grid grid-cols-4 gap-4">
+                        <div className="grid grid-cols-4 gap-2 md:gap-4">
                             {[
                                 { label: 'Days', value: timeLeft.days },
                                 { label: 'Hours', value: timeLeft.hours },
@@ -233,12 +234,12 @@ const EventDetails: React.FC = () => {
                                 { label: 'Seconds', value: timeLeft.seconds }
                             ].map((item) => (
                                 <div key={item.label} className="text-center">
-                                    <div className="bg-brand-dark/50 rounded-xl p-4 mb-2">
-                                        <span className="text-4xl md:text-5xl font-display font-bold text-white">
+                                    <div className="bg-brand-dark/50 rounded-lg md:rounded-xl p-2 md:p-4 mb-1 md:mb-2">
+                                        <span className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white">
                                             {item.value.toString().padStart(2, '0')}
                                         </span>
                                     </div>
-                                    <span className="text-gray-400 text-sm uppercase tracking-wider">{item.label}</span>
+                                    <span className="text-gray-400 text-[10px] md:text-sm uppercase tracking-wider">{item.label}</span>
                                 </div>
                             ))}
                         </div>
@@ -246,25 +247,25 @@ const EventDetails: React.FC = () => {
                 )}
 
                 {/* Two Column Layout */}
-                <div className="grid lg:grid-cols-2 gap-8">
+                <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
                     {/* LEFT COLUMN - Registration Form */}
                     <div className="space-y-6">
                         {event.registration_status === 'open' ? (
                             <motion.div
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="bg-white/5 border border-white/10 rounded-2xl p-8 sticky top-6"
+                                className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-8 lg:sticky lg:top-6"
                             >
-                                <h3 className="font-display font-bold text-2xl text-white mb-6">Register Now</h3>
+                                <h3 className="font-display font-bold text-xl md:text-2xl text-white mb-4 md:mb-6">Register Now</h3>
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Rider Name</label>
+                                        <label className="block text-xs md:text-sm font-bold text-gray-400 uppercase mb-2">Rider Name</label>
                                         <input
                                             type="text"
                                             name="name"
                                             value={formData.name}
                                             onChange={handleInputChange}
-                                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
+                                            className="w-full bg-black/20 border border-white/10 rounded-lg md:rounded-xl p-3 md:p-4 text-sm md:text-base text-white focus:border-brand-gold focus:outline-none"
                                             required
                                         />
                                     </div>
@@ -320,7 +321,7 @@ const EventDetails: React.FC = () => {
                                     </div>
                                     <button
                                         type="submit"
-                                        className="w-full bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark font-display font-bold text-xl py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform"
+                                        className="w-full bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark font-display font-bold text-base md:text-xl py-3 md:py-4 rounded-lg md:rounded-xl shadow-lg hover:scale-[1.02] transition-transform"
                                     >
                                         Proceed to Payment
                                     </button>
@@ -357,9 +358,9 @@ const EventDetails: React.FC = () => {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.1 }}
-                                className="bg-white/5 border border-white/10 rounded-2xl p-8"
+                                className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-8"
                             >
-                                <h3 className="font-display font-bold text-2xl text-white mb-4 flex items-center gap-2">
+                                <h3 className="font-display font-bold text-lg md:text-2xl text-white mb-3 md:mb-4 flex items-center gap-2">
                                     <Users className="text-brand-gold" size={24} />
                                     Age Categories
                                 </h3>
