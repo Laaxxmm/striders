@@ -126,17 +126,25 @@ const EventDetails: React.FC = () => {
             categoryPrice: selectedCategory?.price,
         };
 
+        console.log('Submitting data:', submissionData);
+        console.log('Google Form URL:', event?.google_form_url);
+
         if (event?.google_form_url) {
             try {
-                await fetch(event.google_form_url, {
+                const response = await fetch(event.google_form_url, {
                     method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
                     body: JSON.stringify(submissionData),
                     mode: "no-cors"
                 });
-                console.log("Data sent to Google Sheet");
+                console.log("Data sent to Google Sheet successfully");
             } catch (error) {
-                console.error("Error sending to Google Sheet", error);
+                console.error("Error sending to Google Sheet:", error);
             }
+        } else {
+            console.warn('No Google Form URL configured for this event');
         }
 
         if (event?.razorpay_link) {
@@ -179,8 +187,8 @@ const EventDetails: React.FC = () => {
                     {/* Registration Status Badge */}
                     <div className="absolute top-8 right-8">
                         <div className={`px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider ${event.registration_status === 'open'
-                                ? 'bg-green-500 text-white'
-                                : 'bg-red-500 text-white'
+                            ? 'bg-green-500 text-white'
+                            : 'bg-red-500 text-white'
                             }`}>
                             Registration {event.registration_status}
                         </div>
