@@ -7,6 +7,15 @@ html {
 }
 
 @layer base {
+  :root {
+    /* Logo Colors - PushPedal Theme */
+    --color-brand-gold: #FFD700;
+    --color-brand-yellow: #FFC107;
+    --color-brand-green: #7CB342;
+    --color-brand-green-dark: #558B2F;
+    --color-brand-dark: #1A1A1A;
+  }
+
   body {
     @apply bg-brand-dark text-white font-sans;
   }
@@ -16,8 +25,41 @@ html {
   .font-display {
     font-family: 'Outfit', sans-serif;
   }
-  
+
   .glass-panel {
     @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  /* Brand color utilities */
+  .bg-brand-gold {
+    background-color: var(--color-brand-gold);
+  }
+
+  .bg-brand-yellow {
+    background-color: var(--color-brand-yellow);
+  }
+
+  .bg-brand-green {
+    background-color: var(--color-brand-green);
+  }
+
+  .text-brand-gold {
+    color: var(--color-brand-gold);
+  }
+
+  .text-brand-yellow {
+    color: var(--color-brand-yellow);
+  }
+
+  .text-brand-green {
+    color: var(--color-brand-green);
+  }
+
+  .border-brand-gold {
+    border-color: var(--color-brand-gold);
+  }
+
+  .border-brand-green {
+    border-color: var(--color-brand-green);
   }
 }

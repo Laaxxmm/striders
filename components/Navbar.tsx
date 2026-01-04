@@ -58,13 +58,12 @@ const Navbar: React.FC = () => {
         >
           <div className="flex justify-between items-center">
             {/* Logo */}
-            <a href="#" className="flex items-center gap-2 group mr-8">
-              <div className="bg-brand-gold p-2 rounded-full text-brand-dark transform group-hover:rotate-12 transition-transform">
-                <Bike size={20} strokeWidth={3} />
-              </div>
-              <span className={`font-display font-extrabold text-xl tracking-tight text-white`}>
-                Push<span className="text-brand-gold">Pedal</span>
-              </span>
+            <a href="#" className="flex items-center gap-3 group mr-8">
+              <img
+                src="/assets/logo.png"
+                alt="PushPedal Logo"
+                className="h-10 md:h-12 w-auto object-contain drop-shadow-lg"
+              />
             </a>
 
             {/* Desktop Menu */}
@@ -115,9 +114,12 @@ const Navbar: React.FC = () => {
                 </a>
               ))}
 
-              <button className="ml-4 bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark px-6 py-2 rounded-full font-display font-bold text-sm hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all transform hover:scale-105">
+              <a
+                href="#events"
+                className="ml-4 bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark px-6 py-2 rounded-full font-display font-bold text-sm hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all transform hover:scale-105 inline-block"
+              >
                 Join Race
-              </button>
+              </a>
             </div>
 
             {/* Mobile Menu Toggle */}
@@ -168,9 +170,13 @@ const Navbar: React.FC = () => {
                   {link.name}
                 </a>
               ))}
-              <button className="w-full max-w-xs bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark px-8 py-4 rounded-full font-display font-bold text-lg shadow-xl hover:scale-105 transition-transform mt-4">
+              <a
+                href="#events"
+                onClick={() => setIsOpen(false)}
+                className="w-full max-w-xs bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark px-8 py-4 rounded-full font-display font-bold text-lg shadow-xl hover:scale-105 transition-transform mt-4 text-center inline-block"
+              >
                 Join Race
-              </button>
+              </a>
             </div>
           </motion.div>
         )}
