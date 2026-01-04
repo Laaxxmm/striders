@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Trash2, Save, ArrowLeft, Upload } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { Plus, Trash2, Save, ArrowLeft, Upload, Edit, Eye, List } from 'lucide-react';
+import { supabase, Event, EventCategory, EventInfoSection, EventSponsor } from '../lib/supabase';
 
 interface Category {
     id: string;
@@ -22,6 +22,10 @@ interface Sponsor {
 }
 
 const AdminAddEvent: React.FC = () => {
+    const [view, setView] = useState<'list' | 'form'>('list');
+    const [editingEventId, setEditingEventId] = useState<string | null>(null);
+    const [existingEvents, setExistingEvents] = useState<Event[]>([]);
+
     const [formData, setFormData] = useState({
         name: '',
         date: '',
@@ -50,6 +54,146 @@ const AdminAddEvent: React.FC = () => {
 
     const [notification, setNotification] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const fetchEvents = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('events')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            setExistingEvents(data || []);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
+    };
+
+    const loadEventForEdit = async (eventId: string) => {
+        setIsLoading(true);
+        try {
+            // Fetch event
+            const { data: eventData, error: eventError } = await supabase
+                .from('events')
+                .select('*')
+                .eq('id', eventId)
+                .single();
+
+            if (eventError) throw eventError;
+
+            // Set form data
+            setFormData({
+                name: eventData.name,
+                date: eventData.date,
+                time: eventData.time,
+                location: eventData.location,
+                description: eventData.description,
+                deadline: eventData.deadline,
+                razorpayLink: eventData.razorpay_link,
+                googleFormUrl: eventData.google_form_url || '',
+                courseMapUrl: eventData.course_map_url || '',
+                registrationStatus: eventData.registration_status
+            });
+
+            setImagePreview(eventData.image_url || '');
+
+            // Fetch categories
+            const { data: categoriesData, error: categoriesError } = await supabase
+                .from('event_categories')
+                .select('*')
+                .eq('event_id', eventId);
+
+            if (categoriesError) throw categoriesError;
+            setCategories(categoriesData.map(cat => ({
+                id: cat.id,
+                name: cat.name,
+                price: cat.price.toString()
+            })));
+
+            // Fetch info sections
+            const { data: infoData, error: infoError } = await supabase
+                .from('event_info_sections')
+                .select('*')
+                .eq('event_id', eventId)
+                .order('order', { ascending: true });
+
+            if (infoError) throw infoError;
+            setInfoSections(infoData.map(section => ({
+                id: section.id,
+                title: section.title,
+                content: section.content
+            })));
+
+            // Fetch sponsors
+            const { data: sponsorsData, error: sponsorsError } = await supabase
+                .from('event_sponsors')
+                .select('*')
+                .eq('event_id', eventId)
+                .order('order', { ascending: true });
+
+            if (sponsorsError) throw sponsorsError;
+            setSponsors(sponsorsData.map(sponsor => ({
+                id: sponsor.id,
+                name: sponsor.name,
+                logoUrl: sponsor.logo_url
+            })));
+
+            setEditingEventId(eventId);
+            setView('form');
+        } catch (error: any) {
+            console.error('Error loading event:', error);
+            setNotification(`Error: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const deleteEvent = async (eventId: string) => {
+        if (!confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('events')
+                .delete()
+                .eq('id', eventId);
+
+            if (error) throw error;
+
+            setNotification('Event deleted successfully!');
+            fetchEvents();
+            setTimeout(() => setNotification(null), 3000);
+        } catch (error: any) {
+            console.error('Error deleting event:', error);
+            setNotification(`Error: ${error.message}`);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            name: '',
+            date: '',
+            time: '',
+            location: '',
+            description: '',
+            deadline: '',
+            razorpayLink: '',
+            googleFormUrl: '',
+            courseMapUrl: '',
+            registrationStatus: 'open'
+        });
+        setImageFile(null);
+        setImagePreview('');
+        setCategories([{ id: '1', name: 'U-4 Balance Bike', price: '499' }]);
+        setInfoSections([{ id: '1', title: 'Participation Fee', content: '' }]);
+        setSponsors([]);
+        setEditingEventId(null);
+    };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -127,9 +271,9 @@ const AdminAddEvent: React.FC = () => {
         setIsLoading(true);
 
         try {
-            let imageUrl = '';
+            let imageUrl = imagePreview;
 
-            // Upload image to Supabase Storage if provided
+            // Upload new image if provided
             if (imageFile) {
                 const fileExt = imageFile.name.split('.').pop();
                 const fileName = `${Date.now()}.${fileExt}`;
@@ -139,7 +283,6 @@ const AdminAddEvent: React.FC = () => {
 
                 if (uploadError) throw uploadError;
 
-                // Get public URL
                 const { data: { publicUrl } } = supabase.storage
                     .from('event-images')
                     .getPublicUrl(fileName);
@@ -147,97 +290,123 @@ const AdminAddEvent: React.FC = () => {
                 imageUrl = publicUrl;
             }
 
-            // Insert event
-            const { data: eventData, error: eventError } = await supabase
-                .from('events')
-                .insert([{
-                    name: formData.name,
-                    date: formData.date,
-                    time: formData.time,
-                    location: formData.location,
-                    description: formData.description,
-                    deadline: formData.deadline,
-                    razorpay_link: formData.razorpayLink,
-                    google_form_url: formData.googleFormUrl || null,
-                    image_url: imageUrl || null,
-                    course_map_url: formData.courseMapUrl || null,
-                    registration_status: formData.registrationStatus
-                }])
-                .select()
-                .single();
+            if (editingEventId) {
+                // Update existing event
+                const { error: eventError } = await supabase
+                    .from('events')
+                    .update({
+                        name: formData.name,
+                        date: formData.date,
+                        time: formData.time,
+                        location: formData.location,
+                        description: formData.description,
+                        deadline: formData.deadline,
+                        razorpay_link: formData.razorpayLink,
+                        google_form_url: formData.googleFormUrl || null,
+                        image_url: imageUrl || null,
+                        course_map_url: formData.courseMapUrl || null,
+                        registration_status: formData.registrationStatus
+                    })
+                    .eq('id', editingEventId);
 
-            if (eventError) throw eventError;
+                if (eventError) throw eventError;
 
-            const eventId = eventData.id;
+                // Delete old categories, info sections, and sponsors
+                await supabase.from('event_categories').delete().eq('event_id', editingEventId);
+                await supabase.from('event_info_sections').delete().eq('event_id', editingEventId);
+                await supabase.from('event_sponsors').delete().eq('event_id', editingEventId);
 
-            // Insert categories
-            if (categories.length > 0) {
-                const categoryInserts = categories.map(cat => ({
-                    event_id: eventId,
-                    name: cat.name,
-                    price: parseFloat(cat.price)
-                }));
+                // Insert new ones
+                if (categories.length > 0) {
+                    const categoryInserts = categories.map(cat => ({
+                        event_id: editingEventId,
+                        name: cat.name,
+                        price: parseFloat(cat.price)
+                    }));
+                    await supabase.from('event_categories').insert(categoryInserts);
+                }
 
-                const { error: catError } = await supabase
-                    .from('event_categories')
-                    .insert(categoryInserts);
+                if (infoSections.length > 0) {
+                    const infoInserts = infoSections.map((section, index) => ({
+                        event_id: editingEventId,
+                        title: section.title,
+                        content: section.content,
+                        order: index
+                    }));
+                    await supabase.from('event_info_sections').insert(infoInserts);
+                }
 
-                if (catError) throw catError;
+                if (sponsors.length > 0) {
+                    const sponsorInserts = sponsors.map((sponsor, index) => ({
+                        event_id: editingEventId,
+                        name: sponsor.name,
+                        logo_url: sponsor.logoUrl,
+                        order: index
+                    }));
+                    await supabase.from('event_sponsors').insert(sponsorInserts);
+                }
+
+                setNotification('Event Updated Successfully!');
+            } else {
+                // Create new event (existing code)
+                const { data: eventData, error: eventError } = await supabase
+                    .from('events')
+                    .insert([{
+                        name: formData.name,
+                        date: formData.date,
+                        time: formData.time,
+                        location: formData.location,
+                        description: formData.description,
+                        deadline: formData.deadline,
+                        razorpay_link: formData.razorpayLink,
+                        google_form_url: formData.googleFormUrl || null,
+                        image_url: imageUrl || null,
+                        course_map_url: formData.courseMapUrl || null,
+                        registration_status: formData.registrationStatus
+                    }])
+                    .select()
+                    .single();
+
+                if (eventError) throw eventError;
+
+                const eventId = eventData.id;
+
+                if (categories.length > 0) {
+                    const categoryInserts = categories.map(cat => ({
+                        event_id: eventId,
+                        name: cat.name,
+                        price: parseFloat(cat.price)
+                    }));
+                    await supabase.from('event_categories').insert(categoryInserts);
+                }
+
+                if (infoSections.length > 0) {
+                    const infoInserts = infoSections.map((section, index) => ({
+                        event_id: eventId,
+                        title: section.title,
+                        content: section.content,
+                        order: index
+                    }));
+                    await supabase.from('event_info_sections').insert(infoInserts);
+                }
+
+                if (sponsors.length > 0) {
+                    const sponsorInserts = sponsors.map((sponsor, index) => ({
+                        event_id: eventId,
+                        name: sponsor.name,
+                        logo_url: sponsor.logoUrl,
+                        order: index
+                    }));
+                    await supabase.from('event_sponsors').insert(sponsorInserts);
+                }
+
+                setNotification(`Event Created Successfully! Event ID: ${eventId}`);
             }
 
-            // Insert info sections
-            if (infoSections.length > 0) {
-                const infoInserts = infoSections.map((section, index) => ({
-                    event_id: eventId,
-                    title: section.title,
-                    content: section.content,
-                    order: index
-                }));
-
-                const { error: infoError } = await supabase
-                    .from('event_info_sections')
-                    .insert(infoInserts);
-
-                if (infoError) throw infoError;
-            }
-
-            // Insert sponsors
-            if (sponsors.length > 0) {
-                const sponsorInserts = sponsors.map((sponsor, index) => ({
-                    event_id: eventId,
-                    name: sponsor.name,
-                    logo_url: sponsor.logoUrl,
-                    order: index
-                }));
-
-                const { error: sponsorError } = await supabase
-                    .from('event_sponsors')
-                    .insert(sponsorInserts);
-
-                if (sponsorError) throw sponsorError;
-            }
-
-            setNotification(`Event Saved Successfully! Event ID: ${eventId}`);
             setTimeout(() => setNotification(null), 5000);
-
-            // Reset form
-            setFormData({
-                name: '',
-                date: '',
-                time: '',
-                location: '',
-                description: '',
-                deadline: '',
-                razorpayLink: '',
-                googleFormUrl: '',
-                courseMapUrl: '',
-                registrationStatus: 'open'
-            });
-            setImageFile(null);
-            setImagePreview('');
-            setCategories([{ id: '1', name: 'U-4 Balance Bike', price: '499' }]);
-            setInfoSections([{ id: '1', title: 'Participation Fee', content: '' }]);
-            setSponsors([]);
+            resetForm();
+            fetchEvents();
+            setView('list');
 
         } catch (error: any) {
             console.error('Error saving event:', error);
@@ -250,13 +419,29 @@ const AdminAddEvent: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-brand-dark p-6 md:p-12 text-white">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 <a href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors">
                     <ArrowLeft size={18} /> Back to Home
                 </a>
 
                 <div className="flex justify-between items-center mb-12">
-                    <h1 className="font-display font-bold text-4xl">Admin <span className="text-brand-gold">Add Event</span></h1>
+                    <h1 className="font-display font-bold text-4xl">Admin <span className="text-brand-gold">Panel</span></h1>
+                    {view === 'list' && (
+                        <button
+                            onClick={() => { resetForm(); setView('form'); }}
+                            className="bg-brand-gold text-brand-dark px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2"
+                        >
+                            <Plus size={20} /> Create New Event
+                        </button>
+                    )}
+                    {view === 'form' && (
+                        <button
+                            onClick={() => { resetForm(); setView('list'); }}
+                            className="bg-white/10 text-white px-6 py-3 rounded-full font-bold hover:bg-white/20 transition-colors flex items-center gap-2"
+                        >
+                            <List size={20} /> View All Events
+                        </button>
+                    )}
                 </div>
 
                 {notification && (
@@ -269,301 +454,371 @@ const AdminAddEvent: React.FC = () => {
                     </motion.div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-8 bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-sm">
-                    {/* Basic Info */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Event Name</label>
-                            <input
-                                type="text"
-                                name="name"
-                                value={formData.name}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                placeholder="e.g. Monsoon Cup 2026"
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Location</label>
-                            <input
-                                type="text"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                placeholder="e.g. Jio World Garden, Mumbai"
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Date</label>
-                            <input
-                                type="date"
-                                name="date"
-                                value={formData.date}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Time</label>
-                            <input
-                                type="time"
-                                name="time"
-                                value={formData.time}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                required
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-400 uppercase">Description</label>
-                        <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleInputChange}
-                            rows={4}
-                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                            placeholder="Event details..."
-                            required
-                        />
-                    </div>
-
-                    {/* Banner Upload */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-bold text-gray-400 uppercase">Event Banner</label>
-                        <div className="relative border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-brand-gold/50 transition-colors">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleImageUpload}
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                            />
-                            {imagePreview ? (
-                                <div className="relative h-48 w-full rounded-lg overflow-hidden">
-                                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center gap-2 text-gray-400">
-                                    <Upload size={32} />
-                                    <span>Click to Upload Image</span>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Categories */}
+                {view === 'list' ? (
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Race Categories</label>
-                            <button
-                                type="button"
-                                onClick={addCategory}
-                                className="text-brand-gold text-sm font-bold flex items-center gap-1 hover:text-white transition-colors"
-                            >
-                                <Plus size={16} /> Add Category
-                            </button>
-                        </div>
-                        <div className="space-y-3">
-                            {categories.map((cat) => (
-                                <div key={cat.id} className="flex gap-3">
-                                    <input
-                                        type="text"
-                                        placeholder="Category Name (e.g. U-5)"
-                                        value={cat.name}
-                                        onChange={(e) => updateCategory(cat.id, 'name', e.target.value)}
-                                        className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
-                                        required
-                                    />
-                                    <input
-                                        type="number"
-                                        placeholder="Price (₹)"
-                                        value={cat.price}
-                                        onChange={(e) => updateCategory(cat.id, 'price', e.target.value)}
-                                        className="w-32 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
-                                        required
-                                    />
-                                    {categories.length > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => removeCategory(cat.id)}
-                                            className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 size={20} />
-                                        </button>
-                                    )}
+                        {existingEvents.length === 0 ? (
+                            <div className="text-center py-12 bg-white/5 border border-white/10 rounded-2xl">
+                                <p className="text-gray-400 text-lg">No events created yet. Click "Create New Event" to get started!</p>
+                            </div>
+                        ) : (
+                            existingEvents.map((event) => (
+                                <div key={event.id} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-brand-gold/50 transition-colors">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <h3 className="font-display font-bold text-2xl text-white">{event.name}</h3>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${event.registration_status === 'open' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+                                                    {event.registration_status.toUpperCase()}
+                                                </span>
+                                            </div>
+                                            <div className="text-gray-400 space-y-1">
+                                                <p>📅 {new Date(event.date).toLocaleDateString()} at {event.time}</p>
+                                                <p>📍 {event.location}</p>
+                                                <p className="text-sm">Created: {new Date(event.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <a
+                                                href={`/event/${event.id}`}
+                                                target="_blank"
+                                                className="p-3 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+                                                title="View Event Page"
+                                            >
+                                                <Eye size={20} />
+                                            </a>
+                                            <button
+                                                onClick={() => loadEventForEdit(event.id)}
+                                                className="p-3 bg-brand-gold/20 text-brand-gold rounded-lg hover:bg-brand-gold/30 transition-colors"
+                                                title="Edit Event"
+                                            >
+                                                <Edit size={20} />
+                                            </button>
+                                            <button
+                                                onClick={() => deleteEvent(event.id)}
+                                                className="p-3 bg-red-500/20 text-red-500 rounded-lg hover:bg-red-500/30 transition-colors"
+                                                title="Delete Event"
+                                            >
+                                                <Trash2 size={20} />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
+                            ))
+                        )}
                     </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-8 bg-white/5 border border-white/10 p-8 rounded-3xl backdrop-blur-sm">
+                        {editingEventId && (
+                            <div className="bg-brand-gold/10 border border-brand-gold/30 rounded-xl p-4 mb-4">
+                                <p className="text-brand-gold font-bold">Editing Event</p>
+                            </div>
+                        )}
 
-                    {/* Info Sections */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Information Sections</label>
-                            <button
-                                type="button"
-                                onClick={addInfoSection}
-                                className="text-brand-gold text-sm font-bold flex items-center gap-1 hover:text-white transition-colors"
-                            >
-                                <Plus size={16} /> Add Section
-                            </button>
+                        {/* Rest of the form - same as before */}
+                        {/* Basic Info */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Event Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={formData.name}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    placeholder="e.g. Monsoon Cup 2026"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Location</label>
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    placeholder="e.g. Jio World Garden, Mumbai"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Date</label>
+                                <input
+                                    type="date"
+                                    name="date"
+                                    value={formData.date}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Time</label>
+                                <input
+                                    type="time"
+                                    name="time"
+                                    value={formData.time}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    required
+                                />
+                            </div>
                         </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-400 uppercase">Description</label>
+                            <textarea
+                                name="description"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                                rows={4}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                placeholder="Event details..."
+                                required
+                            />
+                        </div>
+
+                        {/* Banner Upload */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-bold text-gray-400 uppercase">Event Banner</label>
+                            <div className="relative border-2 border-dashed border-white/20 rounded-xl p-8 text-center hover:border-brand-gold/50 transition-colors">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                {imagePreview ? (
+                                    <div className="relative h-48 w-full rounded-lg overflow-hidden">
+                                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center gap-2 text-gray-400">
+                                        <Upload size={32} />
+                                        <span>Click to Upload Image</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Categories */}
                         <div className="space-y-4">
-                            {infoSections.map((section) => (
-                                <div key={section.id} className="bg-black/20 border border-white/10 rounded-xl p-4 space-y-3">
-                                    <div className="flex gap-3">
+                            <div className="flex justify-between items-center">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Race Categories</label>
+                                <button
+                                    type="button"
+                                    onClick={addCategory}
+                                    className="text-brand-gold text-sm font-bold flex items-center gap-1 hover:text-white transition-colors"
+                                >
+                                    <Plus size={16} /> Add Category
+                                </button>
+                            </div>
+                            <div className="space-y-3">
+                                {categories.map((cat) => (
+                                    <div key={cat.id} className="flex gap-3">
                                         <input
                                             type="text"
-                                            placeholder="Section Title (e.g. Eligibility)"
-                                            value={section.title}
-                                            onChange={(e) => updateInfoSection(section.id, 'title', e.target.value)}
+                                            placeholder="Category Name (e.g. U-5)"
+                                            value={cat.name}
+                                            onChange={(e) => updateCategory(cat.id, 'name', e.target.value)}
                                             className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
                                             required
                                         />
-                                        {infoSections.length > 1 && (
+                                        <input
+                                            type="number"
+                                            placeholder="Price (₹)"
+                                            value={cat.price}
+                                            onChange={(e) => updateCategory(cat.id, 'price', e.target.value)}
+                                            className="w-32 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
+                                            required
+                                        />
+                                        {categories.length > 1 && (
                                             <button
                                                 type="button"
-                                                onClick={() => removeInfoSection(section.id)}
+                                                onClick={() => removeCategory(cat.id)}
                                                 className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                                             >
                                                 <Trash2 size={20} />
                                             </button>
                                         )}
                                     </div>
-                                    <textarea
-                                        placeholder="Section content..."
-                                        value={section.content}
-                                        onChange={(e) => updateInfoSection(section.id, 'content', e.target.value)}
-                                        rows={3}
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
-                                        required
-                                    />
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Sponsors */}
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Sponsors</label>
+                        {/* Info Sections */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Information Sections</label>
+                                <button
+                                    type="button"
+                                    onClick={addInfoSection}
+                                    className="text-brand-gold text-sm font-bold flex items-center gap-1 hover:text-white transition-colors"
+                                >
+                                    <Plus size={16} /> Add Section
+                                </button>
+                            </div>
+                            <div className="space-y-4">
+                                {infoSections.map((section) => (
+                                    <div key={section.id} className="bg-black/20 border border-white/10 rounded-xl p-4 space-y-3">
+                                        <div className="flex gap-3">
+                                            <input
+                                                type="text"
+                                                placeholder="Section Title (e.g. Eligibility)"
+                                                value={section.title}
+                                                onChange={(e) => updateInfoSection(section.id, 'title', e.target.value)}
+                                                className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
+                                                required
+                                            />
+                                            {infoSections.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeInfoSection(section.id)}
+                                                    className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            )}
+                                        </div>
+                                        <textarea
+                                            placeholder="Section content..."
+                                            value={section.content}
+                                            onChange={(e) => updateInfoSection(section.id, 'content', e.target.value)}
+                                            rows={3}
+                                            className="w-full bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Sponsors */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Sponsors</label>
+                                <button
+                                    type="button"
+                                    onClick={addSponsor}
+                                    className="text-brand-gold text-sm font-bold flex items-center gap-1 hover:text-white transition-colors"
+                                >
+                                    <Plus size={16} /> Add Sponsor
+                                </button>
+                            </div>
+                            <div className="space-y-3">
+                                {sponsors.map((sponsor) => (
+                                    <div key={sponsor.id} className="flex gap-3">
+                                        <input
+                                            type="text"
+                                            placeholder="Sponsor Name"
+                                            value={sponsor.name}
+                                            onChange={(e) => updateSponsor(sponsor.id, 'name', e.target.value)}
+                                            className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
+                                        />
+                                        <input
+                                            type="url"
+                                            placeholder="Logo URL"
+                                            value={sponsor.logoUrl}
+                                            onChange={(e) => updateSponsor(sponsor.id, 'logoUrl', e.target.value)}
+                                            className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeSponsor(sponsor.id)}
+                                            className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Registration Deadline</label>
+                                <input
+                                    type="date"
+                                    name="deadline"
+                                    value={formData.deadline}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Registration Status</label>
+                                <select
+                                    name="registrationStatus"
+                                    value={formData.registrationStatus}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                >
+                                    <option value="open">Open</option>
+                                    <option value="closed">Closed</option>
+                                </select>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Razorpay Payment Link</label>
+                                <input
+                                    type="url"
+                                    name="razorpayLink"
+                                    value={formData.razorpayLink}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    placeholder="https://rzp.io/..."
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Course Map URL</label>
+                                <input
+                                    type="url"
+                                    name="courseMapUrl"
+                                    value={formData.courseMapUrl}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    placeholder="https://..."
+                                />
+                            </div>
+                            <div className="md:col-span-2 space-y-2">
+                                <label className="text-sm font-bold text-gray-400 uppercase">Google Script Webhook URL</label>
+                                <input
+                                    type="url"
+                                    name="googleFormUrl"
+                                    value={formData.googleFormUrl}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
+                                    placeholder="https://script.google.com/macros/s/.../exec"
+                                />
+                                <p className="text-xs text-gray-500">
+                                    Deploy the Google Apps Script via Extensions &gt; Apps Script in your Sheet.
+                                    <a href="/google_apps_script.js" target="_blank" className="text-brand-gold underline ml-1">View Script Code</a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="pt-6 border-t border-white/10 flex gap-4">
                             <button
-                                type="button"
-                                onClick={addSponsor}
-                                className="text-brand-gold text-sm font-bold flex items-center gap-1 hover:text-white transition-colors"
+                                type="submit"
+                                disabled={isLoading}
+                                className="flex-1 bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark font-display font-bold text-xl py-4 rounded-xl shadow-lg hover:shadow-brand-gold/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Plus size={16} /> Add Sponsor
+                                <Save size={20} /> {isLoading ? 'Saving...' : editingEventId ? 'Update Event' : 'Save Event'}
                             </button>
+                            {editingEventId && (
+                                <button
+                                    type="button"
+                                    onClick={() => { resetForm(); setView('list'); }}
+                                    className="px-8 py-4 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            )}
                         </div>
-                        <div className="space-y-3">
-                            {sponsors.map((sponsor) => (
-                                <div key={sponsor.id} className="flex gap-3">
-                                    <input
-                                        type="text"
-                                        placeholder="Sponsor Name"
-                                        value={sponsor.name}
-                                        onChange={(e) => updateSponsor(sponsor.id, 'name', e.target.value)}
-                                        className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
-                                    />
-                                    <input
-                                        type="url"
-                                        placeholder="Logo URL"
-                                        value={sponsor.logoUrl}
-                                        onChange={(e) => updateSponsor(sponsor.id, 'logoUrl', e.target.value)}
-                                        className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeSponsor(sponsor.id)}
-                                        className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                    >
-                                        <Trash2 size={20} />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Registration Deadline</label>
-                            <input
-                                type="date"
-                                name="deadline"
-                                value={formData.deadline}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Registration Status</label>
-                            <select
-                                name="registrationStatus"
-                                value={formData.registrationStatus}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                            >
-                                <option value="open">Open</option>
-                                <option value="closed">Closed</option>
-                            </select>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Razorpay Payment Link</label>
-                            <input
-                                type="url"
-                                name="razorpayLink"
-                                value={formData.razorpayLink}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                placeholder="https://rzp.io/..."
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Course Map URL</label>
-                            <input
-                                type="url"
-                                name="courseMapUrl"
-                                value={formData.courseMapUrl}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                placeholder="https://..."
-                            />
-                        </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <label className="text-sm font-bold text-gray-400 uppercase">Google Script Webhook URL</label>
-                            <input
-                                type="url"
-                                name="googleFormUrl"
-                                value={formData.googleFormUrl}
-                                onChange={handleInputChange}
-                                className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none transition-colors"
-                                placeholder="https://script.google.com/macros/s/.../exec"
-                            />
-                            <p className="text-xs text-gray-500">
-                                Deploy the Google Apps Script via Extensions &gt; Apps Script in your Sheet.
-                                <a href="/google_apps_script.js" target="_blank" className="text-brand-gold underline ml-1">View Script Code</a>
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="pt-6 border-t border-white/10">
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className="w-full bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark font-display font-bold text-xl py-4 rounded-xl shadow-lg hover:shadow-brand-gold/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <Save size={20} /> {isLoading ? 'Saving...' : 'Save Event'}
-                        </button>
-                    </div>
-
-                </form>
+                    </form>
+                )}
             </div>
         </div>
     );
