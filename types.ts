@@ -18,6 +18,6 @@ export interface Category {
 
 export enum BikeLevel {
   BEGINNER = 'Tiny Gliders',
-  INTERMEDIATE = 'Little Striders',
+  INTERMEDIATE = 'Push Pedal Riders',
   ADVANCED = 'Speed Racers'
 }

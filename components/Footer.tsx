@@ -12,7 +12,7 @@ const Footer: React.FC = () => {
                 <Bike className="h-6 w-6 text-brand-dark" />
               </div>
               <span className="font-display font-bold text-2xl text-white">
-                Little<span className="text-brand-gold">Striders</span>
+                Push<span className="text-brand-gold">Pedal</span>
               </span>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
             <div className="flex flex-col space-y-2 mt-4 text-gray-400 text-sm">
               <div className="flex items-center space-x-2">
                 <Mail size={16} />
-                <span>hello@littlestriders.in</span>
+                <span>hello@pushpedal.in</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone size={16} />
@@ -61,7 +61,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-          <p>&copy; 2026 Little Striders India. All rights reserved.</p>
+          <p>&copy; 2026 Push Pedal India. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-white">Privacy Policy</a>
             <a href="#" className="hover:text-white">Terms of Service</a>

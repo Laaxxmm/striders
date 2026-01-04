@@ -79,7 +79,7 @@ const Hero: React.FC = () => {
             transition={{ delay: 0.2, duration: 0.8 }}
             className="font-display font-extrabold text-5xl md:text-8xl text-white leading-[1.1] mb-8"
           >
-            Little Feet, <br />
+            Young Champions, <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-yellow-300 to-brand-gold">
               Big Dreams
             </span>
@@ -172,7 +172,7 @@ const Hero: React.FC = () => {
               <div className="relative">
                 <img
                   src="/hero_image_no_bg.png"
-                  alt="Little Strider Champion"
+                  alt="Push Pedal Champion"
                   className="w-full h-auto object-cover rounded-3xl shadow-2xl border-4 border-white/10"
                   style={{
                     maskImage: 'radial-gradient(circle, black 60%, transparent 100%)',

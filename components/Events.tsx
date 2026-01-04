@@ -21,7 +21,7 @@ const Events: React.FC = () => {
     },
     {
       id: '2',
-      title: 'Bangalore Strider Blast',
+      title: 'Bangalore Pedal Blast',
       date: 'Sept 10, 2024',
       location: 'Cubbon Park, Bangalore',
       category: 'Advanced Only',

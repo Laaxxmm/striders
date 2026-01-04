@@ -29,14 +29,14 @@ const Gallery: React.FC = () => {
                             <span className="text-brand-gold font-bold uppercase tracking-widest text-xs">Our Moments</span>
                         </div>
                         <h2 className="font-display text-4xl md:text-5xl font-bold text-white mb-4">
-                            Life at <span className="text-brand-gold">Striders</span>
+                            Life at <span className="text-brand-gold">Push Pedal</span>
                         </h2>
                         <p className="text-gray-400 max-w-lg">
                             Capturing the pure joy, determination, and speed of our little champions on track.
                         </p>
                     </div>
                     <a href="#" className="hidden md:flex items-center gap-2 text-white/70 hover:text-brand-gold transition-colors group">
-                        <span className="text-sm font-medium">Follow us @LittleStridersIndia</span>
+                        <span className="text-sm font-medium">Follow us @PushPedalIndia</span>
                         <Instagram size={20} className="transform group-hover:rotate-12 transition-transform" />
                     </a>
                 </div>
@@ -65,7 +65,7 @@ const Gallery: React.FC = () => {
                                 {/* Dark Overlay with Content */}
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                                     <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                                        <p className="text-white font-bold text-lg">Little Striders</p>
+                                        <p className="text-white font-bold text-lg">Push Pedal</p>
                                         <p className="text-brand-gold text-xs uppercase tracking-wider font-bold mt-1">View Moment</p>
                                     </div>
                                 </div>
