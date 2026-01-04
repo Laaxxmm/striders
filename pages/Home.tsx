@@ -2,7 +2,6 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import InfoSection from '../components/InfoSection';
-import Programs from '../components/Programs';
 import Gallery from '../components/Gallery';
 import TrainingLocation from '../components/TrainingLocation';
 import Events from '../components/Events';
@@ -18,7 +17,6 @@ const Home: React.FC = () => {
             <Navbar />
             <Hero />
             <InfoSection />
-            <Programs />
             <Categories />
             <Gallery />
             <TrainingLocation />
