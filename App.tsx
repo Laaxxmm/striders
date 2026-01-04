@@ -2,11 +2,14 @@ import React from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import InfoSection from './components/InfoSection';
-import Categories from './components/Categories';
+import Programs from './components/Programs';
+import Gallery from './components/Gallery';
+import TrainingLocation from './components/TrainingLocation';
 import Events from './components/Events';
 import AiCoach from './components/AiCoach';
 import Footer from './components/Footer';
 import ScrollTrack from './components/ScrollTrack';
+import Categories from './components/Categories';
 
 const App: React.FC = () => {
   return (
@@ -15,7 +18,10 @@ const App: React.FC = () => {
       <Navbar />
       <Hero />
       <InfoSection />
+      <Programs />
       <Categories />
+      <Gallery />
+      <TrainingLocation />
       <Events />
       <AiCoach />
       <Footer />
