@@ -15,7 +15,7 @@ const Categories: React.FC = () => {
       icon: ShieldCheck,
       gradient: "from-pink-500 via-rose-500 to-purple-600",
       buttonColor: "bg-rose-500",
-      img: "/category_beginner.jpg"
+      img: "/images/category_beginner.jpg"
     },
     {
       id: 2,
@@ -26,7 +26,7 @@ const Categories: React.FC = () => {
       icon: Zap,
       gradient: "from-blue-500 via-cyan-500 to-teal-400",
       buttonColor: "bg-cyan-600",
-      img: "/category_intermediate.jpg"
+      img: "/images/category_intermediate.jpg"
     },
     {
       id: 3,
@@ -37,7 +37,7 @@ const Categories: React.FC = () => {
       icon: Trophy,
       gradient: "from-amber-400 via-orange-500 to-red-500",
       buttonColor: "bg-orange-500",
-      img: "/category_advanced.jpg"
+      img: "/images/category_advanced.jpg"
     }
   ];
 
@@ -132,8 +132,8 @@ const Categories: React.FC = () => {
                 <button
                   onClick={() => toggleExpand(program.id)}
                   className={`px-8 py-4 rounded-full border border-white/20 text-white font-bold transition-all flex items-center gap-2 mx-auto lg:mx-0 ${expandedCard === program.id
-                      ? 'bg-brand-gold text-brand-dark border-brand-gold'
-                      : 'hover:bg-brand-gold hover:text-brand-dark hover:border-brand-gold'
+                    ? 'bg-brand-gold text-brand-dark border-brand-gold'
+                    : 'hover:bg-brand-gold hover:text-brand-dark hover:border-brand-gold'
                     }`}
                 >
                   View Details
