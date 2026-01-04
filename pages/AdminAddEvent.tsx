@@ -19,6 +19,7 @@ interface Sponsor {
     id: string;
     name: string;
     logoUrl: string;
+    logoFile?: File | null;
 }
 
 const AdminAddEvent: React.FC = () => {
@@ -256,20 +257,27 @@ const AdminAddEvent: React.FC = () => {
 
     // Sponsor handlers
     const addSponsor = () => {
-        setSponsors(prev => [
-            ...prev,
-            { id: Date.now().toString(), name: '', logoUrl: '' }
-        ]);
+        setSponsors([...sponsors, { id: Date.now().toString(), name: '', logoUrl: '', logoFile: null }]);
     };
 
     const removeSponsor = (id: string) => {
-        setSponsors(prev => prev.filter(sponsor => sponsor.id !== id));
+        setSponsors(sponsors.filter(s => s.id !== id));
     };
 
-    const updateSponsor = (id: string, field: 'name' | 'logoUrl', value: string) => {
-        setSponsors(prev => prev.map(sponsor =>
-            sponsor.id === id ? { ...sponsor, [field]: value } : sponsor
-        ));
+    const updateSponsor = (id: string, field: keyof Sponsor, value: string) => {
+        setSponsors(sponsors.map(s => s.id === id ? { ...s, [field]: value } : s));
+    };
+
+    const handleSponsorLogoChange = (id: string, file: File | null) => {
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSponsors(sponsors.map(s =>
+                    s.id === id ? { ...s, logoFile: file, logoUrl: reader.result as string } : s
+                ));
+            };
+            reader.readAsDataURL(file);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -397,12 +405,36 @@ const AdminAddEvent: React.FC = () => {
                 }
 
                 if (sponsors.length > 0) {
-                    const sponsorInserts = sponsors.map((sponsor, index) => ({
-                        event_id: eventId,
-                        name: sponsor.name,
-                        logo_url: sponsor.logoUrl,
-                        order: index
+                    const sponsorInserts = await Promise.all(sponsors.map(async (sponsor, index) => {
+                        let logoUrl = sponsor.logoUrl;
+
+                        // Upload logo file if provided
+                        if (sponsor.logoFile) {
+                            const fileExt = sponsor.logoFile.name.split('.').pop();
+                            const fileName = `${eventId}-sponsor-${index}-${Date.now()}.${fileExt}`;
+
+                            const { error: uploadError } = await supabase.storage
+                                .from('event-images')
+                                .upload(fileName, sponsor.logoFile);
+
+                            if (uploadError) {
+                                console.error('Error uploading sponsor logo:', uploadError);
+                            } else {
+                                const { data: { publicUrl } } = supabase.storage
+                                    .from('event-images')
+                                    .getPublicUrl(fileName);
+                                logoUrl = publicUrl;
+                            }
+                        }
+
+                        return {
+                            event_id: eventId,
+                            name: sponsor.name,
+                            logo_url: logoUrl,
+                            order: index
+                        };
                     }));
+
                     await supabase.from('event_sponsors').insert(sponsorInserts);
                 }
 
@@ -713,28 +745,42 @@ const AdminAddEvent: React.FC = () => {
                             </div>
                             <div className="space-y-3">
                                 {sponsors.map((sponsor) => (
-                                    <div key={sponsor.id} className="flex gap-3">
-                                        <input
-                                            type="text"
-                                            placeholder="Sponsor Name"
-                                            value={sponsor.name}
-                                            onChange={(e) => updateSponsor(sponsor.id, 'name', e.target.value)}
-                                            className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
-                                        />
-                                        <input
-                                            type="url"
-                                            placeholder="Logo URL"
-                                            value={sponsor.logoUrl}
-                                            onChange={(e) => updateSponsor(sponsor.id, 'logoUrl', e.target.value)}
-                                            className="flex-1 bg-black/20 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeSponsor(sponsor.id)}
-                                            className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                                        >
-                                            <Trash2 size={20} />
-                                        </button>
+                                    <div key={sponsor.id} className="bg-black/20 border border-white/10 rounded-lg p-4">
+                                        <div className="flex gap-3 mb-3">
+                                            <input
+                                                type="text"
+                                                placeholder="Sponsor Name"
+                                                value={sponsor.name}
+                                                onChange={(e) => updateSponsor(sponsor.id, 'name', e.target.value)}
+                                                className="flex-1 bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-brand-gold focus:outline-none"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSponsor(sponsor.id)}
+                                                className="p-3 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                                            >
+                                                <Trash2 size={20} />
+                                            </button>
+                                        </div>
+                                        <div className="flex gap-3 items-center">
+                                            <label className="flex-1 cursor-pointer">
+                                                <div className="bg-black/30 border border-white/10 rounded-lg p-3 text-gray-400 hover:border-brand-gold transition-colors flex items-center gap-2">
+                                                    <Upload size={20} />
+                                                    <span>{sponsor.logoFile ? sponsor.logoFile.name : 'Upload Logo'}</span>
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleSponsorLogoChange(sponsor.id, e.target.files?.[0] || null)}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                            {sponsor.logoUrl && (
+                                                <div className="w-20 h-20 bg-white rounded-lg p-2 flex items-center justify-center">
+                                                    <img src={sponsor.logoUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
