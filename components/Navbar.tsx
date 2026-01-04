@@ -142,17 +142,17 @@ const Navbar: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             className="fixed inset-0 z-40 bg-brand-dark/95 backdrop-blur-xl pt-32 px-6 lg:hidden overflow-y-auto"
           >
-            <div className="flex flex-col items-center gap-6 pb-10">
+            <div className="flex flex-col items-center gap-4 pb-10">
               {/* Mobile Programs Section */}
-              <div className="w-full max-w-xs border-b border-white/10 pb-6 mb-2">
-                <p className="text-brand-gold text-xs font-bold uppercase tracking-widest mb-4 text-center">Programs</p>
-                <div className="flex flex-col gap-3 text-center">
+              <div className="w-full max-w-sm border-b border-white/10 pb-5 mb-2">
+                <p className="text-brand-gold text-[10px] font-bold uppercase tracking-[0.15em] mb-4 text-center">Programs</p>
+                <div className="flex flex-col gap-2.5 text-center">
                   {programs.map((prog) => (
                     <a
                       key={prog.name}
                       href={prog.href}
                       onClick={() => setIsOpen(false)}
-                      className="text-white font-bold text-lg hover:text-brand-gold"
+                      className="text-white font-semibold text-base hover:text-brand-gold transition-colors"
                     >
                       {prog.name}
                     </a>
@@ -165,7 +165,7 @@ const Navbar: React.FC = () => {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="font-display text-2xl font-bold hover:text-brand-gold text-white"
+                  className="font-display text-xl font-semibold hover:text-brand-gold text-white transition-colors"
                 >
                   {link.name}
                 </a>
@@ -173,7 +173,7 @@ const Navbar: React.FC = () => {
               <a
                 href="#events"
                 onClick={() => setIsOpen(false)}
-                className="w-full max-w-xs bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark px-8 py-4 rounded-full font-display font-bold text-lg shadow-xl hover:scale-105 transition-transform mt-4 text-center inline-block"
+                className="w-full max-w-sm bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark px-8 py-3.5 rounded-full font-display font-bold text-base shadow-xl hover:scale-105 transition-transform mt-6 text-center inline-block"
               >
                 Join Race
               </a>
