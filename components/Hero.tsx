@@ -52,10 +52,10 @@ const Hero: React.FC = () => {
     <section className="relative min-h-screen w-full overflow-hidden flex items-center bg-brand-dark pt-40 md:pt-32 lg:pt-20">
 
       {/* Ambient Glows */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-violet/40 rounded-full blur-[120px] mix-blend-screen" />
+      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-brand-green/20 rounded-full blur-[120px] mix-blend-screen" />
       <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-brand-gold/10 rounded-full blur-[120px] mix-blend-screen" />
 
-      <div className="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
+      <div className="max-w-7xl mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-12 items-center">
 
         {/* Text Content */}
         <motion.div

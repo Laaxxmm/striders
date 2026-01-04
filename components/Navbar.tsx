@@ -62,7 +62,7 @@ const Navbar: React.FC = () => {
               <img
                 src="/assets/logo.png"
                 alt="PushPedal Logo"
-                className="h-10 md:h-12 w-auto object-contain drop-shadow-lg"
+                className="h-16 md:h-20 lg:h-24 w-auto object-contain drop-shadow-lg"
               />
             </a>
 
