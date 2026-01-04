@@ -341,13 +341,13 @@ const EventDetails: React.FC = () => {
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="bg-white/5 border border-white/10 rounded-2xl p-8"
+                            className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-8"
                         >
-                            <h3 className="font-display font-bold text-2xl text-white mb-4 flex items-center gap-2">
-                                <Trophy className="text-brand-gold" size={24} />
+                            <h3 className="font-display font-bold text-base md:text-2xl text-white mb-3 md:mb-4 flex items-center gap-2">
+                                <Trophy className="text-brand-gold" size={20} />
                                 About This Event
                             </h3>
-                            <p className="text-gray-300 leading-relaxed">
+                            <p className="text-sm md:text-base text-gray-300 leading-relaxed">
                                 {event.description}
                             </p>
                         </motion.div>
@@ -360,15 +360,15 @@ const EventDetails: React.FC = () => {
                                 transition={{ delay: 0.1 }}
                                 className="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-8"
                             >
-                                <h3 className="font-display font-bold text-lg md:text-2xl text-white mb-3 md:mb-4 flex items-center gap-2">
-                                    <Users className="text-brand-gold" size={24} />
+                                <h3 className="font-display font-bold text-base md:text-2xl text-white mb-3 md:mb-4 flex items-center gap-2">
+                                    <Users className="text-brand-gold" size={20} />
                                     Age Categories
                                 </h3>
                                 <div className="space-y-3">
                                     {categories.map((cat) => (
-                                        <div key={cat.id} className="flex justify-between items-center bg-black/20 rounded-xl p-4">
-                                            <span className="text-white font-bold">{cat.name}</span>
-                                            <span className="text-brand-gold font-bold">₹{cat.price}</span>
+                                        <div key={cat.id} className="flex justify-between items-center bg-black/20 rounded-lg md:rounded-xl p-3 md:p-4">
+                                            <span className="text-sm md:text-base text-white font-bold">{cat.name}</span>
+                                            <span className="text-sm md:text-base text-brand-gold font-bold">₹{cat.price}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -383,12 +383,12 @@ const EventDetails: React.FC = () => {
                                 transition={{ delay: 0.2 }}
                                 className="bg-white/5 border border-white/10 rounded-2xl p-8"
                             >
-                                <h3 className="font-display font-bold text-2xl text-white mb-4">Course Map</h3>
+                                <h3 className="font-display font-bold text-base md:text-2xl text-white mb-3 md:mb-4">Course Map</h3>
                                 <a
                                     href={event.course_map_url}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform"
+                                    className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark px-4 md:px-6 py-2 md:py-3 rounded-full text-sm md:text-base font-bold hover:scale-105 transition-transform"
                                 >
                                     <Download size={20} /> Download Course Map
                                 </a>
@@ -402,8 +402,8 @@ const EventDetails: React.FC = () => {
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: 0.3 }}
                             >
-                                <h3 className="font-display font-bold text-2xl text-white mb-4 flex items-center gap-2">
-                                    <Gift className="text-brand-gold" size={24} />
+                                <h3 className="font-display font-bold text-base md:text-2xl text-white mb-3 md:mb-4 flex items-center gap-2">
+                                    <Gift className="text-brand-gold" size={20} />
                                     Event Information
                                 </h3>
                                 <div className="space-y-3">
@@ -413,7 +413,7 @@ const EventDetails: React.FC = () => {
                                                 onClick={() => toggleSection(section.id)}
                                                 className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
                                             >
-                                                <span className="font-bold text-lg text-white">{section.title}</span>
+                                                <span className="font-bold text-sm md:text-lg text-white">{section.title}</span>
                                                 <ChevronDown
                                                     size={24}
                                                     className={`text-brand-gold transform transition-transform ${expandedSection === section.id ? 'rotate-180' : ''
@@ -429,7 +429,7 @@ const EventDetails: React.FC = () => {
                                                         transition={{ duration: 0.3 }}
                                                         className="overflow-hidden"
                                                     >
-                                                        <div className="p-6 pt-0 text-gray-300 leading-relaxed whitespace-pre-line">
+                                                        <div className="p-4 md:p-6 pt-0 text-sm md:text-base text-gray-300 leading-relaxed whitespace-pre-line">
                                                             {section.content}
                                                         </div>
                                                     </motion.div>
