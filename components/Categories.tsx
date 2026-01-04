@@ -63,6 +63,7 @@ const Categories: React.FC = () => {
           {programs.map((program, idx) => (
             <motion.div
               key={program.id}
+              id={`program-${program.id === 1 ? 'mini' : program.id === 2 ? 'x' : 'pro'}`}
               initial={{ opacity: 0, y: 100 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
