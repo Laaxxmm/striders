@@ -1,31 +1,16 @@
 import React from 'react';
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import InfoSection from './components/InfoSection';
-import Programs from './components/Programs';
-import Gallery from './components/Gallery';
-import TrainingLocation from './components/TrainingLocation';
-import Events from './components/Events';
-import AiCoach from './components/AiCoach';
-import Footer from './components/Footer';
-import ScrollTrack from './components/ScrollTrack';
-import Categories from './components/Categories';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/Home';
+import AdminAddEvent from './pages/AdminAddEvent';
 
 const App: React.FC = () => {
   return (
-    <div className="bg-brand-dark min-h-screen font-sans selection:bg-brand-gold selection:text-brand-dark overflow-x-hidden">
-      <ScrollTrack />
-      <Navbar />
-      <Hero />
-      <InfoSection />
-      <Programs />
-      <Categories />
-      <Gallery />
-      <TrainingLocation />
-      <Events />
-      <AiCoach />
-      <Footer />
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/admin/add-event" element={<AdminAddEvent />} />
+      </Routes>
+    </Router>
   );
 };
 
