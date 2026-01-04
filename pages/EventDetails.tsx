@@ -451,15 +451,18 @@ const EventDetails: React.FC = () => {
                         transition={{ delay: 0.6 }}
                         className="border-t border-white/10 pt-12 mt-12"
                     >
-                        <h3 className="font-display font-bold text-3xl text-white mb-8 text-center">Our Sponsors</h3>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                        <h3 className="font-display font-bold text-2xl md:text-3xl text-white mb-6 md:mb-8 text-center">Our Sponsors</h3>
+                        <div className="flex flex-wrap justify-center gap-6 md:gap-8">
                             {sponsors.map((sponsor) => (
-                                <div key={sponsor.id} className="bg-white/5 border border-white/10 rounded-xl p-6 flex items-center justify-center hover:scale-105 transition-transform">
-                                    <img
-                                        src={sponsor.logo_url}
-                                        alt={sponsor.name}
-                                        className="max-w-full max-h-20 object-contain"
-                                    />
+                                <div key={sponsor.id} className="group">
+                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white p-4 md:p-6 flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300">
+                                        <img
+                                            src={sponsor.logo_url}
+                                            alt={sponsor.name}
+                                            className="w-full h-full object-contain"
+                                        />
+                                    </div>
+                                    <p className="text-center text-xs md:text-sm text-gray-400 mt-2 group-hover:text-brand-gold transition-colors">{sponsor.name}</p>
                                 </div>
                             ))}
                         </div>
