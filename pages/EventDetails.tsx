@@ -1,83 +1,111 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Clock, ArrowLeft, AlertCircle } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-interface Category {
-    id: string;
-    name: string;
-    price: string;
-}
-
-interface EventData {
-    id: string;
-    name: string;
-    date: string;
-    time: string;
-    location: string;
-    description: string;
-    deadline: string;
-    razorpayLink: string;
-    googleFormUrl?: string;
-    image: string;
-    categories: Category[];
-}
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Calendar, Clock, ChevronDown, Download, ExternalLink } from 'lucide-react';
+import { supabase, Event, EventCategory, EventInfoSection, EventSponsor } from '../lib/supabase';
 
 const EventDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
-    const [event, setEvent] = useState<EventData | null>(null);
+    const [event, setEvent] = useState<Event | null>(null);
+    const [categories, setCategories] = useState<EventCategory[]>([]);
+    const [infoSections, setInfoSections] = useState<EventInfoSection[]>([]);
+    const [sponsors, setSponsors] = useState<EventSponsor[]>([]);
     const [loading, setLoading] = useState(true);
-    const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null);
+    const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
-        name: '',
         parentName: '',
+        name: '',
         contact: '',
         email: '',
         category: ''
     });
 
-    useEffect(() => {
-        const fetchEvent = () => {
-            const storedEvents = localStorage.getItem('adminEvents');
-            if (storedEvents) {
-                const events: EventData[] = JSON.parse(storedEvents);
-                const foundEvent = events.find((e) => e.id === id);
-                if (foundEvent) {
-                    setEvent(foundEvent);
-                } else {
-                    // Event not found handling
-                }
-            }
-            setLoading(false);
-        };
+    const [timeLeft, setTimeLeft] = useState({
+        days: 0,
+        hours: 0,
+        minutes: 0,
+        seconds: 0
+    });
 
-        fetchEvent();
+    useEffect(() => {
+        fetchEventData();
     }, [id]);
 
+    const fetchEventData = async () => {
+        if (!id) return;
+
+        try {
+            // Fetch event
+            const { data: eventData, error: eventError } = await supabase
+                .from('events')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (eventError) throw eventError;
+            setEvent(eventData);
+
+            // Fetch categories
+            const { data: categoriesData, error: categoriesError } = await supabase
+                .from('event_categories')
+                .select('*')
+                .eq('event_id', id);
+
+            if (categoriesError) throw categoriesError;
+            setCategories(categoriesData || []);
+
+            // Fetch info sections
+            const { data: infoData, error: infoError } = await supabase
+                .from('event_info_sections')
+                .select('*')
+                .eq('event_id', id)
+                .order('order', { ascending: true });
+
+            if (infoError) throw infoError;
+            setInfoSections(infoData || []);
+
+            // Fetch sponsors
+            const { data: sponsorsData, error: sponsorsError } = await supabase
+                .from('event_sponsors')
+                .select('*')
+                .eq('event_id', id)
+                .order('order', { ascending: true });
+
+            if (sponsorsError) throw sponsorsError;
+            setSponsors(sponsorsData || []);
+
+        } catch (error) {
+            console.error('Error fetching event:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        if (!event) return;
+        if (!event?.deadline) return;
 
         const timer = setInterval(() => {
-            const deadlineDate = new Date(event.deadline).getTime();
             const now = new Date().getTime();
-            const difference = deadlineDate - now;
+            const deadline = new Date(event.deadline).getTime();
+            const distance = deadline - now;
 
-            if (difference > 0) {
-                setTimeLeft({
-                    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                    hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-                    minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
-                    seconds: Math.floor((difference % (1000 * 60)) / 1000),
-                });
-            } else {
-                setTimeLeft(null); // Deadline passed
+            if (distance < 0) {
+                clearInterval(timer);
+                setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+                return;
             }
+
+            setTimeLeft({
+                days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+                seconds: Math.floor((distance % (1000 * 60)) / 1000)
+            });
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [event]);
+    }, [event?.deadline]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -86,8 +114,7 @@ const EventDetails: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Prepare Data
-        const selectedCategory = event?.categories.find(c => c.id === formData.category);
+        const selectedCategory = categories.find(c => c.id === formData.category);
 
         const submissionData = {
             eventName: event?.name,
@@ -99,13 +126,12 @@ const EventDetails: React.FC = () => {
             categoryPrice: selectedCategory?.price,
         };
 
-        // Send to Google Sheet if URL exists
-        if (event?.googleFormUrl) {
+        if (event?.google_form_url) {
             try {
-                await fetch(event.googleFormUrl, {
+                await fetch(event.google_form_url, {
                     method: "POST",
                     body: JSON.stringify(submissionData),
-                    mode: "no-cors" // Standard for GAS Webhook
+                    mode: "no-cors"
                 });
                 console.log("Data sent to Google Sheet");
             } catch (error) {
@@ -113,230 +139,286 @@ const EventDetails: React.FC = () => {
             }
         }
 
-        if (event?.razorpayLink) {
-            window.location.href = event.razorpayLink;
+        if (event?.razorpay_link) {
+            window.location.href = event.razorpay_link;
         }
     };
 
-    if (loading) return <div className="min-h-screen bg-brand-dark flex items-center justify-center text-white">Loading...</div>;
-    if (!event) return (
-        <div className="min-h-screen bg-brand-dark flex flex-col items-center justify-center text-white gap-4">
-            <h2 className="text-2xl font-bold">Event not found</h2>
-            <button onClick={() => navigate('/')} className="text-brand-gold hover:underline">Return Home</button>
-        </div>
-    );
+    const toggleSection = (sectionId: string) => {
+        setExpandedSection(expandedSection === sectionId ? null : sectionId);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-brand-dark flex items-center justify-center">
+                <div className="text-white text-2xl font-display">Loading...</div>
+            </div>
+        );
+    }
+
+    if (!event) {
+        return (
+            <div className="min-h-screen bg-brand-dark flex items-center justify-center">
+                <div className="text-white text-2xl font-display">Event not found</div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-brand-dark text-white font-sans selection:bg-brand-gold selection:text-brand-dark">
+        <div className="min-h-screen bg-brand-dark">
             {/* Hero Banner */}
-            <div className="relative h-[50vh] w-full overflow-hidden">
-                {event.image ? (
-                    <img src={event.image} alt={event.name} className="w-full h-full object-cover" />
-                ) : (
-                    <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                        <span className="text-gray-500">No Banner Image</span>
-                    </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/50 to-transparent" />
+            {event.image_url && (
+                <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+                    <img
+                        src={event.image_url}
+                        alt={event.name}
+                        className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/50 to-transparent" />
 
-                <div className="absolute top-6 left-6 z-20">
-                    <button onClick={() => navigate('/')} className="flex items-center gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full hover:bg-black/50 transition-colors">
-                        <ArrowLeft size={18} /> Back
-                    </button>
-                </div>
-
-                <div className="absolute bottom-0 left-0 w-full p-6 md:p-12 z-10">
-                    <div className="max-w-7xl mx-auto">
-                        <motion.span
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-brand-gold text-brand-dark font-bold text-xs px-3 py-1 rounded-full uppercase tracking-widest mb-4 inline-block"
-                        >
-                            Registration Open
-                        </motion.span>
-                        <motion.h1
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="text-4xl md:text-6xl font-display font-black mb-4"
-                        >
-                            {event.name}
-                        </motion.h1>
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.2 }}
-                            className="flex flex-wrap gap-6 text-gray-300"
-                        >
-                            <div className="flex items-center gap-2">
-                                <Calendar className="text-brand-gold" size={20} />
-                                <span>{event.date}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Clock className="text-brand-gold" size={20} />
-                                <span>{event.time}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <MapPin className="text-brand-gold" size={20} />
-                                <span>{event.location}</span>
-                            </div>
-                        </motion.div>
+                    {/* Registration Status Badge */}
+                    <div className="absolute top-8 right-8">
+                        <div className={`px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider ${event.registration_status === 'open'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-red-500 text-white'
+                            }`}>
+                            Registration {event.registration_status}
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
 
-            <div className="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-3 gap-12">
-                {/* Left Content */}
-                <div className="md:col-span-2 space-y-12">
+            <div className="max-w-6xl mx-auto px-6 py-12">
+                {/* Event Title & Details */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-12"
+                >
+                    <h1 className="font-display font-bold text-4xl md:text-6xl text-white mb-6">
+                        {event.name}
+                    </h1>
 
-                    {/* Countdown */}
-                    {timeLeft ? (
-                        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm">
-                            <h3 className="text-gray-400 font-bold uppercase tracking-widest text-sm mb-6 text-center">Registration Closes In</h3>
-                            <div className="grid grid-cols-4 gap-4 text-center">
-                                <div>
-                                    <div className="text-3xl md:text-5xl font-display font-bold text-brand-gold mb-1">{timeLeft.days}</div>
-                                    <div className="text-xs text-gray-500 uppercase font-bold">Days</div>
-                                </div>
-                                <div>
-                                    <div className="text-3xl md:text-5xl font-display font-bold text-white mb-1">{timeLeft.hours}</div>
-                                    <div className="text-xs text-gray-500 uppercase font-bold">Hours</div>
-                                </div>
-                                <div>
-                                    <div className="text-3xl md:text-5xl font-display font-bold text-white mb-1">{timeLeft.minutes}</div>
-                                    <div className="text-xs text-gray-500 uppercase font-bold">Mins</div>
-                                </div>
-                                <div>
-                                    <div className="text-3xl md:text-5xl font-display font-bold text-white mb-1">{timeLeft.seconds}</div>
-                                    <div className="text-xs text-gray-500 uppercase font-bold">Secs</div>
-                                </div>
-                            </div>
+                    <div className="flex flex-wrap gap-6 text-gray-300 mb-8">
+                        <div className="flex items-center gap-2">
+                            <Calendar className="text-brand-gold" size={20} />
+                            <span>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                         </div>
-                    ) : (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center text-red-400 font-bold flex items-center justify-center gap-2">
-                            <AlertCircle /> Registration Closed
+                        <div className="flex items-center gap-2">
+                            <Clock className="text-brand-gold" size={20} />
+                            <span>{event.time}</span>
                         </div>
-                    )}
-
-                    {/* Description */}
-                    <div>
-                        <h3 className="text-2xl font-display font-bold mb-6">About the Event</h3>
-                        <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
-                            {event.description}
-                        </p>
+                        <div className="flex items-center gap-2">
+                            <MapPin className="text-brand-gold" size={20} />
+                            <span>{event.location}</span>
+                        </div>
                     </div>
 
-                    {/* Categories */}
-                    <div>
-                        <h3 className="text-2xl font-display font-bold mb-6">Race Categories</h3>
-                        <div className="grid gap-4">
-                            {event.categories.map((cat) => (
-                                <div key={cat.id} className="flex justify-between items-center bg-white/5 border border-white/10 p-4 rounded-xl">
-                                    <span className="font-bold text-white">{cat.name}</span>
-                                    <span className="text-brand-gold font-bold">₹{cat.price}</span>
+                    <p className="text-xl text-gray-300 leading-relaxed">
+                        {event.description}
+                    </p>
+                </motion.div>
+
+                {/* Countdown Timer */}
+                {event.registration_status === 'open' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-gradient-to-r from-brand-gold/10 to-brand-yellow/10 border border-brand-gold/30 rounded-2xl p-8 mb-12"
+                    >
+                        <h3 className="text-brand-gold font-bold text-sm uppercase tracking-widest mb-4 text-center">
+                            Registration Closes In
+                        </h3>
+                        <div className="grid grid-cols-4 gap-4">
+                            {[
+                                { label: 'Days', value: timeLeft.days },
+                                { label: 'Hours', value: timeLeft.hours },
+                                { label: 'Minutes', value: timeLeft.minutes },
+                                { label: 'Seconds', value: timeLeft.seconds }
+                            ].map((item) => (
+                                <div key={item.label} className="text-center">
+                                    <div className="bg-brand-dark/50 rounded-xl p-4 mb-2">
+                                        <span className="text-4xl md:text-5xl font-display font-bold text-white">
+                                            {item.value.toString().padStart(2, '0')}
+                                        </span>
+                                    </div>
+                                    <span className="text-gray-400 text-sm uppercase tracking-wider">{item.label}</span>
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </motion.div>
+                )}
 
-                    {/* Map Placeholder */}
-                    <div>
-                        <h3 className="text-2xl font-display font-bold mb-6">Location</h3>
-                        <div className="w-full h-64 bg-gray-800 rounded-2xl flex items-center justify-center border border-white/10">
-                            <div className="text-center text-gray-500">
-                                <MapPin size={48} className="mx-auto mb-2 opacity-50" />
-                                <p>{event.location}</p>
-                                <p className="text-xs mt-2 uppercase tracking-wide opacity-50">Map Integration Coming Soon</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {/* Course Map */}
+                {event.course_map_url && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-12"
+                    >
+                        <h3 className="font-display font-bold text-2xl text-white mb-4">Course Map</h3>
+                        <a
+                            href={event.course_map_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform"
+                        >
+                            <Download size={20} /> Download Course Map
+                        </a>
+                    </motion.div>
+                )}
 
-                {/* Right Sidebar - Registration */}
-                <div className="relative">
-                    <div className="sticky top-24">
-                        <div className="bg-white text-brand-dark rounded-3xl p-8 shadow-2xl">
-                            <h3 className="font-display font-bold text-2xl mb-2">Register Now</h3>
-                            <p className="text-gray-500 text-sm mb-6">Secure your spot for the big race!</p>
-
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Registration Form */}
+                {event.registration_status === 'open' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-12"
+                    >
+                        <h3 className="font-display font-bold text-2xl text-white mb-6">Register Now</h3>
+                        <form onSubmit={handleSubmit} className="space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Rider Name</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Rider Name</label>
                                     <input
                                         type="text"
                                         name="name"
                                         value={formData.name}
                                         onChange={handleInputChange}
-                                        className="w-full bg-gray-100 border-none rounded-lg p-3 font-medium focus:ring-2 focus:ring-brand-gold"
+                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Parent Name</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Parent Name</label>
                                     <input
                                         type="text"
                                         name="parentName"
                                         value={formData.parentName}
                                         onChange={handleInputChange}
-                                        className="w-full bg-gray-100 border-none rounded-lg p-3 font-medium focus:ring-2 focus:ring-brand-gold"
+                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Contact Number</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Contact</label>
                                     <input
                                         type="tel"
                                         name="contact"
                                         value={formData.contact}
                                         onChange={handleInputChange}
-                                        className="w-full bg-gray-100 border-none rounded-lg p-3 font-medium focus:ring-2 focus:ring-brand-gold"
+                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Email Address</label>
+                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Email</label>
                                     <input
                                         type="email"
                                         name="email"
                                         value={formData.email}
                                         onChange={handleInputChange}
-                                        className="w-full bg-gray-100 border-none rounded-lg p-3 font-medium focus:ring-2 focus:ring-brand-gold"
+                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
                                         required
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Category</label>
-                                    <select
-                                        name="category"
-                                        value={formData.category}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-gray-100 border-none rounded-lg p-3 font-medium focus:ring-2 focus:ring-brand-gold"
-                                        required
-                                    >
-                                        <option value="" disabled>Select a Category</option>
-                                        {event.categories.map(cat => (
-                                            <option key={cat.id} value={cat.id}>{cat.name} - ₹{cat.price}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={!timeLeft}
-                                    className={`w-full py-4 rounded-xl font-bold text-lg mt-4 transition-all ${timeLeft
-                                        ? 'bg-brand-dark text-white hover:bg-black shadow-lg hover:shadow-xl'
-                                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        }`}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Select Category</label>
+                                <select
+                                    name="category"
+                                    value={formData.category}
+                                    onChange={handleInputChange}
+                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
+                                    required
                                 >
-                                    {timeLeft ? 'Proceed to Payment' : 'Registration Closed'}
-                                </button>
-                                <p className="text-center text-xs text-gray-400 mt-4">
-                                    You will be redirected to Razorpay securely.
-                                </p>
-                            </form>
+                                    <option value="">Choose a category</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name} - ₹{cat.price}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button
+                                type="submit"
+                                className="w-full bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark font-display font-bold text-xl py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform"
+                            >
+                                Proceed to Payment
+                            </button>
+                        </form>
+                    </motion.div>
+                )}
+
+                {/* Info Sections (Expandable) */}
+                {infoSections.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="mb-12"
+                    >
+                        <h3 className="font-display font-bold text-3xl text-white mb-6">Event Information</h3>
+                        <div className="space-y-3">
+                            {infoSections.map((section) => (
+                                <div key={section.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                                    <button
+                                        onClick={() => toggleSection(section.id)}
+                                        className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+                                    >
+                                        <span className="font-bold text-lg text-white">{section.title}</span>
+                                        <ChevronDown
+                                            size={24}
+                                            className={`text-brand-gold transform transition-transform ${expandedSection === section.id ? 'rotate-180' : ''
+                                                }`}
+                                        />
+                                    </button>
+                                    <AnimatePresence>
+                                        {expandedSection === section.id && (
+                                            <motion.div
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: 'auto', opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="overflow-hidden"
+                                            >
+                                                <div className="p-6 pt-0 text-gray-300 leading-relaxed whitespace-pre-line">
+                                                    {section.content}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            ))}
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                )}
+
+                {/* Sponsors */}
+                {sponsors.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="border-t border-white/10 pt-12"
+                    >
+                        <h3 className="font-display font-bold text-3xl text-white mb-8 text-center">Our Sponsors</h3>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                            {sponsors.map((sponsor) => (
+                                <div key={sponsor.id} className="bg-white/5 border border-white/10 rounded-xl p-6 flex items-center justify-center hover:scale-105 transition-transform">
+                                    <img
+                                        src={sponsor.logo_url}
+                                        alt={sponsor.name}
+                                        className="max-w-full max-h-20 object-contain"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
             </div>
         </div>
     );
