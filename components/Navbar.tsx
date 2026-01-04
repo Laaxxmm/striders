@@ -63,7 +63,7 @@ const Navbar: React.FC = () => {
                 <Bike size={20} strokeWidth={3} />
               </div>
               <span className={`font-display font-extrabold text-xl tracking-tight text-white`}>
-                Little<span className="text-brand-gold">Striders</span>
+                Push<span className="text-brand-gold">Pedal</span>
               </span>
             </a>
 
