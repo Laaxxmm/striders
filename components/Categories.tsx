@@ -1,40 +1,49 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BikeLevel } from '../types';
-import { Info } from 'lucide-react';
+import { Zap, Trophy, ShieldCheck, ChevronDown } from 'lucide-react';
 
 const Categories: React.FC = () => {
-  const [activeTooltip, setActiveTooltip] = useState<number | null>(null);
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
-  const categories = [
+  const programs = [
     {
       id: 1,
-      name: BikeLevel.BEGINNER,
+      title: "Push Pedal Mini",
       age: "2-3 Years",
-      desc: "Tiny steps lead to big glides. A safe, padded environment for our youngest riders.",
-      skills: "Focus: Walking with bike, sitting balance, and simple steering.",
+      desc: "The perfect start for our youngest riders. Focus on walking with the bike, sitting balance, and simple steering in a safe, play-focused environment.",
+      focus: ["Balance Basics", "Confidence Building", "Fun & Safety"],
+      icon: ShieldCheck,
       gradient: "from-pink-500 via-rose-500 to-purple-600",
+      buttonColor: "bg-rose-500",
       img: "/category_beginner.jpg"
     },
     {
       id: 2,
-      name: BikeLevel.INTERMEDIATE,
+      title: "Push Pedal X",
       age: "3-4 Years",
-      desc: "Speed picking up! Navigating gentle curves and longer straights.",
-      skills: "Focus: Lifting feet for longer glides, turning coordination, and braking.",
-      gradient: "from-brand-violet via-purple-600 to-indigo-600",
+      desc: "For riders ready to pick up speed! We introduce advanced gliding, turning techniques, and controlled braking on longer tracks.",
+      focus: ["Speed Control", "Cornering", "Obstacle Navigation"],
+      icon: Zap,
+      gradient: "from-blue-500 via-cyan-500 to-teal-400",
+      buttonColor: "bg-cyan-600",
       img: "/category_intermediate.jpg"
     },
     {
       id: 3,
-      name: BikeLevel.ADVANCED,
-      age: "4-5+ Years",
-      desc: "Pro level! Obstacles, ramps, and intense competition for the seasoned rider.",
-      skills: "Focus: High speed control, obstacle navigation, and competitive starts.",
-      gradient: "from-blue-500 via-cyan-500 to-teal-400",
+      title: "Push Pedal Pro",
+      age: "4-6 Years",
+      desc: "Elite training for race day. Mastering ramps, complex maneuvers, and competitive racing strategies.",
+      focus: ["Race Strategy", "Advanced Ramps", "Competitive Edge"],
+      icon: Trophy,
+      gradient: "from-amber-400 via-orange-500 to-red-500",
+      buttonColor: "bg-orange-500",
       img: "/category_advanced.jpg"
     }
   ];
+
+  const toggleExpand = (id: number) => {
+    setExpandedCard(expandedCard === id ? null : id);
+  };
 
   return (
     <section id="categories" className="py-24 bg-brand-dark relative z-10">
@@ -51,9 +60,9 @@ const Categories: React.FC = () => {
         </div>
 
         <div className="space-y-32">
-          {categories.map((cat, idx) => (
+          {programs.map((program, idx) => (
             <motion.div
-              key={cat.id}
+              key={program.id}
               initial={{ opacity: 0, y: 100 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
@@ -62,58 +71,76 @@ const Categories: React.FC = () => {
             >
               {/* Image Side */}
               <div className="flex-1 w-full relative group">
-                <div className={`absolute inset-0 bg-gradient-to-br ${cat.gradient} rounded-[2rem] md:rounded-[3rem] blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${program.gradient} rounded-[2rem] md:rounded-[3rem] blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500`} />
                 <div className="relative h-[300px] md:h-[500px] rounded-[2rem] md:rounded-[3rem] overflow-hidden border-4 border-white/5 shadow-2xl">
                   <img
-                    src={cat.img}
-                    alt={cat.name}
+                    src={program.img}
+                    alt={program.title}
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
 
-                  {/* Floating Age Tag with Tooltip */}
-                  <div
-                    className="absolute top-8 left-8 relative z-20"
-                    onMouseEnter={() => setActiveTooltip(cat.id)}
-                    onMouseLeave={() => setActiveTooltip(null)}
-                  >
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full cursor-help flex items-center gap-2">
-                      <span className="text-white font-display font-bold">{cat.age}</span>
-                      <Info size={16} className="text-brand-gold" />
+                  {/* Floating Age Tag with Icon */}
+                  <div className="absolute top-8 left-8 relative z-20">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-3 rounded-full flex items-center gap-3">
+                      <div className="bg-white/20 p-2 rounded-lg">
+                        <program.icon className="text-white w-5 h-5" />
+                      </div>
+                      <span className="text-white font-display font-bold text-lg">{program.age}</span>
                     </div>
-
-                    {/* Tooltip Popup */}
-                    <AnimatePresence>
-                      {activeTooltip === cat.id && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10, scale: 0.9 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                          className="absolute top-full left-0 mt-3 w-64 bg-brand-dark/95 backdrop-blur-xl border border-brand-gold/30 p-4 rounded-xl shadow-2xl z-50"
-                        >
-                          <div className="absolute -top-1 left-8 w-2 h-2 bg-brand-dark border-l border-t border-brand-gold/30 transform rotate-45"></div>
-                          <p className="text-brand-gold font-bold text-xs uppercase mb-1">Skills Developed</p>
-                          <p className="text-white text-sm leading-snug">{cat.skills}</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
                   </div>
                 </div>
               </div>
 
               {/* Text Side */}
               <div className="flex-1 text-center lg:text-left">
-                <span className={`inline-block text-[8rem] md:text-[18rem] leading-[0.8] font-display font-black text-transparent bg-clip-text bg-gradient-to-br ${cat.gradient} opacity-50 mb-[-30px] md:mb-[-110px] relative z-0 select-none drop-shadow-lg`}>
-                  0{cat.id}
+                <span className={`inline-block text-[8rem] md:text-[18rem] leading-[0.8] font-display font-black text-transparent bg-clip-text bg-gradient-to-br ${program.gradient} opacity-50 mb-[-30px] md:mb-[-110px] relative z-0 select-none drop-shadow-lg`}>
+                  0{program.id}
                 </span>
                 <h3 className="relative z-10 font-display text-5xl font-bold text-white mb-6">
-                  {cat.name}
+                  {program.title}
                 </h3>
                 <p className="text-xl text-gray-300 mb-8 leading-relaxed">
-                  {cat.desc}
+                  {program.desc}
                 </p>
-                <button className="px-8 py-4 rounded-full border border-white/20 text-white font-bold hover:bg-brand-gold hover:text-brand-dark hover:border-brand-gold transition-all">
-                  View Rules & Regs
+
+                {/* Expandable Details */}
+                <AnimatePresence>
+                  {expandedCard === program.id && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="mb-8 overflow-hidden"
+                    >
+                      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                        <p className="text-brand-gold font-bold text-sm uppercase mb-4 tracking-widest">Training Focus</p>
+                        <div className="space-y-3">
+                          {program.focus.map((item, i) => (
+                            <div key={i} className="flex items-center gap-3">
+                              <div className={`w-2 h-2 rounded-full ${program.buttonColor}`} />
+                              <span className="text-gray-200 font-medium">{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <button
+                  onClick={() => toggleExpand(program.id)}
+                  className={`px-8 py-4 rounded-full border border-white/20 text-white font-bold transition-all flex items-center gap-2 mx-auto lg:mx-0 ${expandedCard === program.id
+                      ? 'bg-brand-gold text-brand-dark border-brand-gold'
+                      : 'hover:bg-brand-gold hover:text-brand-dark hover:border-brand-gold'
+                    }`}
+                >
+                  View Details
+                  <ChevronDown
+                    size={20}
+                    className={`transform transition-transform ${expandedCard === program.id ? 'rotate-180' : ''}`}
+                  />
                 </button>
               </div>
             </motion.div>
