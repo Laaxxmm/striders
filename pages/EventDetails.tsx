@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Calendar, Clock, ChevronDown, Download, ExternalLink } from 'lucide-react';
+import { MapPin, Calendar, Clock, ChevronDown, Download, Gift, Users, Trophy } from 'lucide-react';
 import { supabase, Event, EventCategory, EventInfoSection, EventSponsor } from '../lib/supabase';
 
 const EventDetails: React.FC = () => {
@@ -36,7 +36,6 @@ const EventDetails: React.FC = () => {
         if (!id) return;
 
         try {
-            // Fetch event
             const { data: eventData, error: eventError } = await supabase
                 .from('events')
                 .select('*')
@@ -46,7 +45,6 @@ const EventDetails: React.FC = () => {
             if (eventError) throw eventError;
             setEvent(eventData);
 
-            // Fetch categories
             const { data: categoriesData, error: categoriesError } = await supabase
                 .from('event_categories')
                 .select('*')
@@ -55,7 +53,6 @@ const EventDetails: React.FC = () => {
             if (categoriesError) throw categoriesError;
             setCategories(categoriesData || []);
 
-            // Fetch info sections
             const { data: infoData, error: infoError } = await supabase
                 .from('event_info_sections')
                 .select('*')
@@ -65,7 +62,6 @@ const EventDetails: React.FC = () => {
             if (infoError) throw infoError;
             setInfoSections(infoData || []);
 
-            // Fetch sponsors
             const { data: sponsorsData, error: sponsorsError } = await supabase
                 .from('event_sponsors')
                 .select('*')
@@ -176,19 +172,41 @@ const EventDetails: React.FC = () => {
         <div className="min-h-screen bg-brand-dark">
             {/* Hero Banner */}
             {event.image_url && (
-                <div className="relative h-[400px] md:h-[500px] overflow-hidden">
+                <div className="relative h-[300px] overflow-hidden">
                     <img
                         src={event.image_url}
                         alt={event.name}
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/70 to-transparent" />
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-center">
+                            <h1 className="font-display font-bold text-4xl md:text-6xl text-white mb-4">
+                                {event.name}
+                            </h1>
+                            <div className="flex flex-wrap justify-center gap-6 text-gray-200">
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="text-brand-gold" size={20} />
+                                    <span>{new Date(event.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Clock className="text-brand-gold" size={20} />
+                                    <span>{event.time}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <MapPin className="text-brand-gold" size={20} />
+                                    <span>{event.location}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Registration Status Badge */}
                     <div className="absolute top-8 right-8">
                         <div className={`px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider ${event.registration_status === 'open'
-                            ? 'bg-green-500 text-white'
-                            : 'bg-red-500 text-white'
+                                ? 'bg-green-500 text-white'
+                                : 'bg-red-500 text-white'
                             }`}>
                             Registration {event.registration_status}
                         </div>
@@ -196,43 +214,12 @@ const EventDetails: React.FC = () => {
                 </div>
             )}
 
-            <div className="max-w-6xl mx-auto px-6 py-12">
-                {/* Event Title & Details */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-12"
-                >
-                    <h1 className="font-display font-bold text-4xl md:text-6xl text-white mb-6">
-                        {event.name}
-                    </h1>
-
-                    <div className="flex flex-wrap gap-6 text-gray-300 mb-8">
-                        <div className="flex items-center gap-2">
-                            <Calendar className="text-brand-gold" size={20} />
-                            <span>{new Date(event.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <Clock className="text-brand-gold" size={20} />
-                            <span>{event.time}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <MapPin className="text-brand-gold" size={20} />
-                            <span>{event.location}</span>
-                        </div>
-                    </div>
-
-                    <p className="text-xl text-gray-300 leading-relaxed">
-                        {event.description}
-                    </p>
-                </motion.div>
-
+            <div className="max-w-7xl mx-auto px-6 py-12">
                 {/* Countdown Timer */}
                 {event.registration_status === 'open' && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
                         className="bg-gradient-to-r from-brand-gold/10 to-brand-yellow/10 border border-brand-gold/30 rounded-2xl p-8 mb-12"
                     >
                         <h3 className="text-brand-gold font-bold text-sm uppercase tracking-widest mb-4 text-center">
@@ -258,160 +245,210 @@ const EventDetails: React.FC = () => {
                     </motion.div>
                 )}
 
-                {/* Course Map */}
-                {event.course_map_url && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-12"
-                    >
-                        <h3 className="font-display font-bold text-2xl text-white mb-4">Course Map</h3>
-                        <a
-                            href={event.course_map_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform"
-                        >
-                            <Download size={20} /> Download Course Map
-                        </a>
-                    </motion.div>
-                )}
-
-                {/* Registration Form */}
-                {event.registration_status === 'open' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-12"
-                    >
-                        <h3 className="font-display font-bold text-2xl text-white mb-6">Register Now</h3>
-                        <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Rider Name</label>
-                                    <input
-                                        type="text"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Parent Name</label>
-                                    <input
-                                        type="text"
-                                        name="parentName"
-                                        value={formData.parentName}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Contact</label>
-                                    <input
-                                        type="tel"
-                                        name="contact"
-                                        value={formData.contact}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Email</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
-                                        className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
-                                        required
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Select Category</label>
-                                <select
-                                    name="category"
-                                    value={formData.category}
-                                    onChange={handleInputChange}
-                                    className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
-                                    required
-                                >
-                                    <option value="">Choose a category</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>
-                                            {cat.name} - ₹{cat.price}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark font-display font-bold text-xl py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform"
+                {/* Two Column Layout */}
+                <div className="grid lg:grid-cols-2 gap-8">
+                    {/* LEFT COLUMN - Registration Form */}
+                    <div className="space-y-6">
+                        {event.registration_status === 'open' ? (
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="bg-white/5 border border-white/10 rounded-2xl p-8 sticky top-6"
                             >
-                                Proceed to Payment
-                            </button>
-                        </form>
-                    </motion.div>
-                )}
-
-                {/* Info Sections (Expandable) */}
-                {infoSections.length > 0 && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5 }}
-                        className="mb-12"
-                    >
-                        <h3 className="font-display font-bold text-3xl text-white mb-6">Event Information</h3>
-                        <div className="space-y-3">
-                            {infoSections.map((section) => (
-                                <div key={section.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
-                                    <button
-                                        onClick={() => toggleSection(section.id)}
-                                        className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
-                                    >
-                                        <span className="font-bold text-lg text-white">{section.title}</span>
-                                        <ChevronDown
-                                            size={24}
-                                            className={`text-brand-gold transform transition-transform ${expandedSection === section.id ? 'rotate-180' : ''
-                                                }`}
+                                <h3 className="font-display font-bold text-2xl text-white mb-6">Register Now</h3>
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Rider Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
+                                            required
                                         />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Parent Name</label>
+                                        <input
+                                            type="text"
+                                            name="parentName"
+                                            value={formData.parentName}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Contact</label>
+                                        <input
+                                            type="tel"
+                                            name="contact"
+                                            value={formData.contact}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Email</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-bold text-gray-400 uppercase mb-2">Select Category</label>
+                                        <select
+                                            name="category"
+                                            value={formData.category}
+                                            onChange={handleInputChange}
+                                            className="w-full bg-black/20 border border-white/10 rounded-xl p-4 text-white focus:border-brand-gold focus:outline-none"
+                                            required
+                                        >
+                                            <option value="">Choose a category</option>
+                                            {categories.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.name} - ₹{cat.price}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-gradient-to-r from-brand-gold to-brand-yellow text-brand-dark font-display font-bold text-xl py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-transform"
+                                    >
+                                        Proceed to Payment
                                     </button>
-                                    <AnimatePresence>
-                                        {expandedSection === section.id && (
-                                            <motion.div
-                                                initial={{ height: 0, opacity: 0 }}
-                                                animate={{ height: 'auto', opacity: 1 }}
-                                                exit={{ height: 0, opacity: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                                className="overflow-hidden"
-                                            >
-                                                <div className="p-6 pt-0 text-gray-300 leading-relaxed whitespace-pre-line">
-                                                    {section.content}
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            ))}
-                        </div>
-                    </motion.div>
-                )}
+                                </form>
+                            </motion.div>
+                        ) : (
+                            <div className="bg-red-500/10 border border-red-500/30 rounded-2xl p-8 text-center">
+                                <h3 className="font-display font-bold text-2xl text-red-500 mb-2">Registration Closed</h3>
+                                <p className="text-gray-400">Registration for this event has ended.</p>
+                            </div>
+                        )}
+                    </div>
 
-                {/* Sponsors */}
+                    {/* RIGHT COLUMN - Event Details */}
+                    <div className="space-y-6">
+                        {/* Description */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-white/5 border border-white/10 rounded-2xl p-8"
+                        >
+                            <h3 className="font-display font-bold text-2xl text-white mb-4 flex items-center gap-2">
+                                <Trophy className="text-brand-gold" size={24} />
+                                About This Event
+                            </h3>
+                            <p className="text-gray-300 leading-relaxed">
+                                {event.description}
+                            </p>
+                        </motion.div>
+
+                        {/* Categories/Age Groups */}
+                        {categories.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.1 }}
+                                className="bg-white/5 border border-white/10 rounded-2xl p-8"
+                            >
+                                <h3 className="font-display font-bold text-2xl text-white mb-4 flex items-center gap-2">
+                                    <Users className="text-brand-gold" size={24} />
+                                    Age Categories
+                                </h3>
+                                <div className="space-y-3">
+                                    {categories.map((cat) => (
+                                        <div key={cat.id} className="flex justify-between items-center bg-black/20 rounded-xl p-4">
+                                            <span className="text-white font-bold">{cat.name}</span>
+                                            <span className="text-brand-gold font-bold">₹{cat.price}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* Course Map */}
+                        {event.course_map_url && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.2 }}
+                                className="bg-white/5 border border-white/10 rounded-2xl p-8"
+                            >
+                                <h3 className="font-display font-bold text-2xl text-white mb-4">Course Map</h3>
+                                <a
+                                    href={event.course_map_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform"
+                                >
+                                    <Download size={20} /> Download Course Map
+                                </a>
+                            </motion.div>
+                        )}
+
+                        {/* Info Sections (Expandable) */}
+                        {infoSections.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.3 }}
+                            >
+                                <h3 className="font-display font-bold text-2xl text-white mb-4 flex items-center gap-2">
+                                    <Gift className="text-brand-gold" size={24} />
+                                    Event Information
+                                </h3>
+                                <div className="space-y-3">
+                                    {infoSections.map((section) => (
+                                        <div key={section.id} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                                            <button
+                                                onClick={() => toggleSection(section.id)}
+                                                className="w-full flex items-center justify-between p-6 text-left hover:bg-white/5 transition-colors"
+                                            >
+                                                <span className="font-bold text-lg text-white">{section.title}</span>
+                                                <ChevronDown
+                                                    size={24}
+                                                    className={`text-brand-gold transform transition-transform ${expandedSection === section.id ? 'rotate-180' : ''
+                                                        }`}
+                                                />
+                                            </button>
+                                            <AnimatePresence>
+                                                {expandedSection === section.id && (
+                                                    <motion.div
+                                                        initial={{ height: 0, opacity: 0 }}
+                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                        exit={{ height: 0, opacity: 0 }}
+                                                        transition={{ duration: 0.3 }}
+                                                        className="overflow-hidden"
+                                                    >
+                                                        <div className="p-6 pt-0 text-gray-300 leading-relaxed whitespace-pre-line">
+                                                            {section.content}
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Sponsors (Full Width) */}
                 {sponsors.length > 0 && (
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.6 }}
-                        className="border-t border-white/10 pt-12"
+                        className="border-t border-white/10 pt-12 mt-12"
                     >
                         <h3 className="font-display font-bold text-3xl text-white mb-8 text-center">Our Sponsors</h3>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
