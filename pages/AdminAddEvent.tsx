@@ -108,8 +108,8 @@ const AdminAddEvent: React.FC = () => {
                 .eq('event_id', eventId);
 
             if (categoriesError) throw categoriesError;
-            setCategories(categoriesData.map(cat => ({
-                id: cat.id,
+            setCategories(categoriesData.map((cat, index) => ({
+                id: `temp-${index}-${Date.now()}`, // Use temporary ID to avoid conflicts
                 name: cat.name,
                 price: cat.price.toString()
             })));
@@ -122,8 +122,8 @@ const AdminAddEvent: React.FC = () => {
                 .order('order', { ascending: true });
 
             if (infoError) throw infoError;
-            setInfoSections(infoData.map(section => ({
-                id: section.id,
+            setInfoSections(infoData.map((section, index) => ({
+                id: `temp-${index}-${Date.now()}`, // Use temporary ID
                 title: section.title,
                 content: section.content
             })));
@@ -136,8 +136,8 @@ const AdminAddEvent: React.FC = () => {
                 .order('order', { ascending: true });
 
             if (sponsorsError) throw sponsorsError;
-            setSponsors(sponsorsData.map(sponsor => ({
-                id: sponsor.id,
+            setSponsors(sponsorsData.map((sponsor, index) => ({
+                id: `temp-${index}-${Date.now()}`, // Use temporary ID
                 name: sponsor.name,
                 logoUrl: sponsor.logo_url
             })));
@@ -157,6 +157,7 @@ const AdminAddEvent: React.FC = () => {
             return;
         }
 
+        setIsLoading(true);
         try {
             const { error } = await supabase
                 .from('events')
@@ -166,11 +167,16 @@ const AdminAddEvent: React.FC = () => {
             if (error) throw error;
 
             setNotification('Event deleted successfully!');
-            fetchEvents();
             setTimeout(() => setNotification(null), 3000);
+
+            // Immediately refresh the events list
+            await fetchEvents();
         } catch (error: any) {
             console.error('Error deleting event:', error);
             setNotification(`Error: ${error.message}`);
+            setTimeout(() => setNotification(null), 3000);
+        } finally {
+            setIsLoading(false);
         }
     };
 
