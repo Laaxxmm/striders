@@ -13,7 +13,7 @@ const Programs: React.FC = () => {
             icon: ShieldCheck,
             color: "from-pink-500 to-rose-500",
             buttonColor: "bg-rose-500",
-            image: "/images/4.webp" // Using 4.webp as a placeholder/gallery image since none specified
+            image: "/images/3.webp" // Testing with known working image
         },
         {
             id: "x",
@@ -81,12 +81,12 @@ const Programs: React.FC = () => {
                             className="group relative rounded-[2.5rem] bg-brand-dark border border-white/5 overflow-hidden hover:border-white/20 transition-all duration-500"
                         >
                             {/* Image Header */}
-                            <div className={`h-48 relative overflow-hidden bg-gradient-to-br ${program.color} group-hover:scale-105 transition-transform duration-700`}>
-                                <div className="absolute inset-0 bg-brand-dark/20 z-10" />
+                            <div className="h-48 relative overflow-hidden group-hover:scale-105 transition-transform duration-700">
+                                <div className={`absolute inset-0 bg-gradient-to-br ${program.color} opacity-20 z-10`} /> {/* Reduced gradient opacity overlay */}
                                 <img
                                     src={program.image}
                                     alt={program.title}
-                                    className="w-full h-full object-cover opacity-80 mix-blend-overlay group-hover:opacity-100 group-hover:mix-blend-normal transition-all duration-500"
+                                    className="w-full h-full object-cover transition-all duration-500"
                                 />
                                 <div className="absolute top-6 left-6 flex items-center gap-3 z-20">
                                     <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl border border-white/20">

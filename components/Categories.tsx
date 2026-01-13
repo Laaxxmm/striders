@@ -15,7 +15,7 @@ const Categories: React.FC = () => {
       icon: ShieldCheck,
       gradient: "from-pink-500 via-rose-500 to-purple-600",
       buttonColor: "bg-rose-500",
-      img: "/images/category_beginner.jpg"
+      img: "/images/8.jpg"
     },
     {
       id: 2,
@@ -26,7 +26,7 @@ const Categories: React.FC = () => {
       icon: Zap,
       gradient: "from-blue-500 via-cyan-500 to-teal-400",
       buttonColor: "bg-cyan-600",
-      img: "/images/category_intermediate.jpg"
+      img: "/images/3.webp"
     },
     {
       id: 3,
@@ -37,7 +37,7 @@ const Categories: React.FC = () => {
       icon: Trophy,
       gradient: "from-amber-400 via-orange-500 to-red-500",
       buttonColor: "bg-orange-500",
-      img: "/images/category_advanced.jpg"
+      img: "/images/6.webp"
     }
   ];
 

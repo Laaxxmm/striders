@@ -11,21 +11,47 @@ const Navbar: React.FC = () => {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
-
-      // Scroll Spy
-      const sections = ['programs', 'gallery', 'locations', 'events', 'coach'];
-      for (const section of sections) {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          if (rect.top <= 150 && rect.bottom >= 150) {
-            setActiveSection(section.charAt(0).toUpperCase() + section.slice(1));
-          }
-        }
-      }
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // IntersectionObserver for Scroll Spy
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -60% 0px', // Active when section is near top of viewport
+      threshold: 0
+    };
+
+    const observerCallback = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          const linkName = {
+            categories: 'Programs',
+            gallery: 'Gallery',
+            locations: 'Training Location',
+            events: 'Upcoming Events',
+            coach: 'Ask Coach'
+          }[sectionId];
+
+          if (linkName) {
+            setActiveSection(linkName);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    const sections = ['categories', 'gallery', 'locations', 'events', 'coach'];
+
+    sections.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) observer.observe(element);
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observer.disconnect();
+    };
   }, []);
 
   const programs = [

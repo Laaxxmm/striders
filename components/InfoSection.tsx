@@ -35,9 +35,9 @@ const InfoSection: React.FC = () => {
       title: "RACE DAY",
       desc: "Put skills to the test! Age-categorized races on professionally designed tracks with safety barriers and cheering crowds.",
       Icon: Flag,
-      bg: "bg-gradient-to-br from-brand-green to-brand-green-dark", // Green (New Theme)
-      buttonColor: "text-brand-green-dark",
-      textColor: "text-white"
+      bg: "bg-white", // White background for maximum contrast against dark theme
+      buttonColor: "text-brand-dark border border-brand-dark/10",
+      textColor: "text-brand-dark"
     },
     {
       id: 3,
@@ -123,8 +123,8 @@ const InfoSection: React.FC = () => {
                   <div className={`${step.bg} rounded-3xl p-6 pb-8 text-center h-full flex flex-col items-center shadow-2xl relative z-0 transition-transform duration-300 hover:-translate-y-2`}>
 
                     {/* Icon popping out */}
-                    <div className="-mt-32 mb-4 relative z-10 w-48 h-48 rounded-full border-4 border-white/20 shadow-xl overflow-hidden bg-brand-dark flex items-center justify-center">
-                      <step.Icon size={80} className="text-white" />
+                    <div className="-mt-32 mb-6 relative z-10 w-32 h-32 rounded-full border-4 border-white/20 shadow-xl overflow-hidden bg-brand-dark flex items-center justify-center">
+                      <step.Icon size={48} className="text-white" />
                     </div>
 
                     {/* Content */}

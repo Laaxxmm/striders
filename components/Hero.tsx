@@ -66,7 +66,7 @@ const Hero: React.FC = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8 }}
-            className="inline-block mb-6"
+            className="inline-block mb-6 mt-32 md:mt-40" // Added top margin
           >
             <span className="py-2 px-6 rounded-full bg-white/5 border border-white/10 text-brand-gold font-display font-bold uppercase tracking-widest text-sm backdrop-blur-md shadow-lg">
               Season 2026 Registration Open
@@ -98,12 +98,12 @@ const Hero: React.FC = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6, duration: 0.8 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12"
+            className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12 relative z-30" // Increased z-index
           >
-            <a href="#events" className="px-10 py-5 bg-brand-gold text-brand-dark font-display font-bold text-lg rounded-full shadow-[0_10px_40px_-10px_rgba(251,191,36,0.5)] hover:bg-white hover:scale-105 transition-all duration-300 inline-block text-center">
+            <a href="#events" className="px-10 py-5 bg-brand-gold text-brand-dark font-display font-bold text-lg rounded-full shadow-[0_10px_40px_-10px_rgba(251,191,36,0.5)] hover:bg-white hover:scale-105 transition-all duration-300 inline-block text-center relative z-30">
               Find a Race Near You
             </a>
-            <button className="px-10 py-5 bg-transparent border-2 border-white/20 text-white font-display font-bold text-lg rounded-full hover:bg-white/10 transition-all duration-300">
+            <button className="px-10 py-5 bg-transparent border-2 border-white/20 text-white font-display font-bold text-lg rounded-full hover:bg-white/10 transition-all duration-300 relative z-30">
               Watch Video
             </button>
           </motion.div>
