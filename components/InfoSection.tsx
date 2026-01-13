@@ -25,8 +25,8 @@ const InfoSection: React.FC = () => {
       title: "ACADEMY",
       desc: "Weekly training sessions with pro coaches. Master the basics of balance, steering, and braking in a fun group environment.",
       Icon: GraduationCap,
-      bg: "bg-gradient-to-r from-brand-gold to-brand-yellow", // Darker gold/orange to match reference feel
-      buttonColor: "text-[#d97706]",
+      bg: "bg-gradient-to-br from-brand-gold to-brand-yellow", // Yellow/Gold
+      buttonColor: "text-brand-dark",
       textColor: "text-brand-dark"
     },
     {
@@ -35,8 +35,8 @@ const InfoSection: React.FC = () => {
       title: "RACE DAY",
       desc: "Put skills to the test! Age-categorized races on professionally designed tracks with safety barriers and cheering crowds.",
       Icon: Flag,
-      bg: "bg-[#5b21b6]", // Violet/Purple
-      buttonColor: "text-[#5b21b6]",
+      bg: "bg-gradient-to-br from-brand-green to-brand-green-dark", // Green (New Theme)
+      buttonColor: "text-brand-green-dark",
       textColor: "text-white"
     },
     {
@@ -45,7 +45,7 @@ const InfoSection: React.FC = () => {
       title: "GLORY",
       desc: "Podium finishes, medals for everyone, and the pride of accomplishment. Memories that last a lifetime.",
       Icon: Medal,
-      bg: "bg-[#191717]", // Dark/Black
+      bg: "bg-[#191717]", // Black/Dark
       buttonColor: "text-black",
       textColor: "text-white"
     }

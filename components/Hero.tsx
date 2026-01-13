@@ -171,7 +171,7 @@ const Hero: React.FC = () => {
               {/* Using a specific Unsplash image but processed with mask or just a clean standard image in a shape */}
               <div className="relative">
                 <img
-                  src="/hero_image_no_bg.png"
+                  src="/images/7.webp"
                   alt="Push Pedal Champion"
                   className="w-full h-auto object-cover rounded-3xl shadow-2xl border-4 border-white/10"
                   style={{

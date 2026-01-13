@@ -4,15 +4,15 @@ import { Instagram, Camera } from 'lucide-react';
 
 const Gallery: React.FC = () => {
     const images = [
-        '/images/event_image_1.jpg',
-        '/images/category_advanced.jpg',
-        '/images/event_image_2.jpg',
-        '/images/category_beginner.jpg',
-        '/images/event_image_3.jpg',
-        '/images/category_intermediate.jpg',
-        '/images/event_delhi.png',
-        '/images/event_bangalore.png',
-        '/images/event_mumbai.png'
+        '/images/1.webp',
+        '/images/2.webp',
+        '/images/3.webp',
+        '/images/4.webp',
+        '/images/5.webp',
+        '/images/6.webp',
+        '/images/8.jpg',
+        '/images/9.jpg',
+        '/images/10.jpg'
     ];
 
     return (

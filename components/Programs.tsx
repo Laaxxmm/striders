@@ -12,7 +12,8 @@ const Programs: React.FC = () => {
             focus: ["Balance Basics", "Confidence Building", "Fun & Safety"],
             icon: ShieldCheck,
             color: "from-pink-500 to-rose-500",
-            buttonColor: "bg-rose-500"
+            buttonColor: "bg-rose-500",
+            image: "/images/4.webp" // Using 4.webp as a placeholder/gallery image since none specified
         },
         {
             id: "x",
@@ -22,7 +23,8 @@ const Programs: React.FC = () => {
             focus: ["Speed Control", "Cornering", "Obstacle Navigation"],
             icon: Zap,
             color: "from-blue-500 to-cyan-500",
-            buttonColor: "bg-cyan-600"
+            buttonColor: "bg-cyan-600",
+            image: "/images/3.webp"
         },
         {
             id: "pro",
@@ -32,7 +34,8 @@ const Programs: React.FC = () => {
             focus: ["Race Strategy", "Advanced Ramps", "Competitive Edge"],
             icon: Trophy,
             color: "from-amber-400 to-orange-500",
-            buttonColor: "bg-orange-500"
+            buttonColor: "bg-orange-500",
+            image: "/images/6.webp"
         }
     ];
 
@@ -77,15 +80,19 @@ const Programs: React.FC = () => {
                             transition={{ delay: idx * 0.2 }}
                             className="group relative rounded-[2.5rem] bg-brand-dark border border-white/5 overflow-hidden hover:border-white/20 transition-all duration-500"
                         >
-                            {/* Gradient Header */}
-                            <div className={`h-32 bg-gradient-to-br ${program.color} relative overflow-hidden`}>
-                                <div className="absolute inset-0 bg-black/10" />
-                                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/20 blur-3xl rounded-full" />
-                                <div className="absolute top-6 left-8 flex items-center gap-3">
-                                    <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl">
-                                        <program.icon className="text-white w-6 h-6" />
+                            {/* Image Header */}
+                            <div className={`h-48 relative overflow-hidden bg-gradient-to-br ${program.color} group-hover:scale-105 transition-transform duration-700`}>
+                                <div className="absolute inset-0 bg-brand-dark/20 z-10" />
+                                <img
+                                    src={program.image}
+                                    alt={program.title}
+                                    className="w-full h-full object-cover opacity-80 mix-blend-overlay group-hover:opacity-100 group-hover:mix-blend-normal transition-all duration-500"
+                                />
+                                <div className="absolute top-6 left-6 flex items-center gap-3 z-20">
+                                    <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl border border-white/20">
+                                        <program.icon className="text-white w-5 h-5" />
                                     </div>
-                                    <span className="text-white font-display font-bold text-lg">{program.age}</span>
+                                    <span className="text-white font-display font-bold text-sm tracking-wider uppercase bg-black/30 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">{program.age}</span>
                                 </div>
                             </div>
 
